@@ -60,8 +60,8 @@ import {
   CategoryItem
 } from "./data";
 
-import { collection, onSnapshot } from "firebase/firestore";
-import { ref as rtdbRef, onValue as onRtdbValue } from "firebase/database";
+import { collection, onSnapshot, doc, setDoc, deleteDoc } from "firebase/firestore";
+import { ref as rtdbRef, onValue as onRtdbValue, set as rtdbSet } from "firebase/database";
 import { db, rtdb, isPlaceholderFirebase } from "./lib/firebase";
 
 import AiAssistant from "./components/AiAssistant";
@@ -745,23 +745,42 @@ export default function App() {
 
   const handleCreateScheme = async (scheme: Scheme) => {
     try {
+      if (!isPlaceholderFirebase) {
+        if (rtdb) {
+          await rtdbSet(rtdbRef(rtdb, `schemes/${scheme.id}`), scheme);
+        } else if (db) {
+          await setDoc(doc(db, "schemes", scheme.id), scheme);
+        }
+      }
       await fetch("/api/schemes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(scheme)
+      }).catch((e) => console.warn("API fallback ignored (expected on Vercel):", e));
+      
+      setSchemes((prev) => {
+        if (prev.some((s) => s.id === scheme.id)) return prev;
+        return [scheme, ...prev];
       });
-      setSchemes((prev) => [scheme, ...prev]);
     } catch (err) {
       console.error("Error creating scheme:", err);
     }
   };
   const handleSaveScheme = async (scheme: Scheme) => {
     try {
+      if (!isPlaceholderFirebase) {
+        if (rtdb) {
+          await rtdbSet(rtdbRef(rtdb, `schemes/${scheme.id}`), scheme);
+        } else if (db) {
+          await setDoc(doc(db, "schemes", scheme.id), scheme);
+        }
+      }
       await fetch("/api/schemes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(scheme)
-      });
+      }).catch((e) => console.warn("API fallback ignored (expected on Vercel):", e));
+      
       setSchemes((prev) => prev.map((s) => (s.id === scheme.id ? scheme : s)));
     } catch (err) {
       console.error("Error saving scheme:", err);
@@ -769,7 +788,14 @@ export default function App() {
   };
   const handleDeleteScheme = async (id: string) => {
     try {
-      await fetch(`/api/schemes/${id}`, { method: "DELETE" });
+      if (!isPlaceholderFirebase) {
+        if (rtdb) {
+          await rtdbSet(rtdbRef(rtdb, `schemes/${id}`), null);
+        } else if (db) {
+          await deleteDoc(doc(db, "schemes", id));
+        }
+      }
+      await fetch(`/api/schemes/${id}`, { method: "DELETE" }).catch((e) => console.warn("API fallback ignored (expected on Vercel):", e));
       setSchemes((prev) => prev.filter((s) => s.id !== id));
     } catch (err) {
       console.error("Error deleting scheme:", err);
@@ -778,23 +804,42 @@ export default function App() {
 
   const handleCreateJob = async (job: Job) => {
     try {
+      if (!isPlaceholderFirebase) {
+        if (rtdb) {
+          await rtdbSet(rtdbRef(rtdb, `jobs/${job.id}`), job);
+        } else if (db) {
+          await setDoc(doc(db, "jobs", job.id), job);
+        }
+      }
       await fetch("/api/jobs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(job)
+      }).catch((e) => console.warn("API fallback ignored (expected on Vercel):", e));
+      
+      setJobs((prev) => {
+        if (prev.some((j) => j.id === job.id)) return prev;
+        return [job, ...prev];
       });
-      setJobs((prev) => [job, ...prev]);
     } catch (err) {
       console.error("Error creating job:", err);
     }
   };
   const handleSaveJob = async (job: Job) => {
     try {
+      if (!isPlaceholderFirebase) {
+        if (rtdb) {
+          await rtdbSet(rtdbRef(rtdb, `jobs/${job.id}`), job);
+        } else if (db) {
+          await setDoc(doc(db, "jobs", job.id), job);
+        }
+      }
       await fetch("/api/jobs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(job)
-      });
+      }).catch((e) => console.warn("API fallback ignored (expected on Vercel):", e));
+      
       setJobs((prev) => prev.map((j) => (j.id === job.id ? job : j)));
     } catch (err) {
       console.error("Error saving job:", err);
@@ -802,7 +847,14 @@ export default function App() {
   };
   const handleDeleteJob = async (id: string) => {
     try {
-      await fetch(`/api/jobs/${id}`, { method: "DELETE" });
+      if (!isPlaceholderFirebase) {
+        if (rtdb) {
+          await rtdbSet(rtdbRef(rtdb, `jobs/${id}`), null);
+        } else if (db) {
+          await deleteDoc(doc(db, "jobs", id));
+        }
+      }
+      await fetch(`/api/jobs/${id}`, { method: "DELETE" }).catch((e) => console.warn("API fallback ignored (expected on Vercel):", e));
       setJobs((prev) => prev.filter((j) => j.id !== id));
     } catch (err) {
       console.error("Error deleting job:", err);
@@ -811,23 +863,42 @@ export default function App() {
 
   const handleCreateScholarship = async (scholarship: Scholarship) => {
     try {
+      if (!isPlaceholderFirebase) {
+        if (rtdb) {
+          await rtdbSet(rtdbRef(rtdb, `scholarships/${scholarship.id}`), scholarship);
+        } else if (db) {
+          await setDoc(doc(db, "scholarships", scholarship.id), scholarship);
+        }
+      }
       await fetch("/api/scholarships", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(scholarship)
+      }).catch((e) => console.warn("API fallback ignored (expected on Vercel):", e));
+      
+      setScholarships((prev) => {
+        if (prev.some((s) => s.id === scholarship.id)) return prev;
+        return [scholarship, ...prev];
       });
-      setScholarships((prev) => [scholarship, ...prev]);
     } catch (err) {
       console.error("Error creating scholarship:", err);
     }
   };
   const handleSaveScholarship = async (scholarship: Scholarship) => {
     try {
+      if (!isPlaceholderFirebase) {
+        if (rtdb) {
+          await rtdbSet(rtdbRef(rtdb, `scholarships/${scholarship.id}`), scholarship);
+        } else if (db) {
+          await setDoc(doc(db, "scholarships", scholarship.id), scholarship);
+        }
+      }
       await fetch("/api/scholarships", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(scholarship)
-      });
+      }).catch((e) => console.warn("API fallback ignored (expected on Vercel):", e));
+      
       setScholarships((prev) => prev.map((s) => (s.id === scholarship.id ? scholarship : s)));
     } catch (err) {
       console.error("Error saving scholarship:", err);
@@ -835,7 +906,14 @@ export default function App() {
   };
   const handleDeleteScholarship = async (id: string) => {
     try {
-      await fetch(`/api/scholarships/${id}`, { method: "DELETE" });
+      if (!isPlaceholderFirebase) {
+        if (rtdb) {
+          await rtdbSet(rtdbRef(rtdb, `scholarships/${id}`), null);
+        } else if (db) {
+          await deleteDoc(doc(db, "scholarships", id));
+        }
+      }
+      await fetch(`/api/scholarships/${id}`, { method: "DELETE" }).catch((e) => console.warn("API fallback ignored (expected on Vercel):", e));
       setScholarships((prev) => prev.filter((s) => s.id !== id));
     } catch (err) {
       console.error("Error deleting scholarship:", err);
@@ -844,23 +922,42 @@ export default function App() {
 
   const handleCreateService = async (service: ServiceItem) => {
     try {
+      if (!isPlaceholderFirebase) {
+        if (rtdb) {
+          await rtdbSet(rtdbRef(rtdb, `services/${service.id}`), service);
+        } else if (db) {
+          await setDoc(doc(db, "services", service.id), service);
+        }
+      }
       await fetch("/api/services", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(service)
+      }).catch((e) => console.warn("API fallback ignored (expected on Vercel):", e));
+      
+      setServices((prev) => {
+        if (prev.some((s) => s.id === service.id)) return prev;
+        return [service, ...prev];
       });
-      setServices((prev) => [service, ...prev]);
     } catch (err) {
       console.error("Error creating service:", err);
     }
   };
   const handleSaveService = async (service: ServiceItem) => {
     try {
+      if (!isPlaceholderFirebase) {
+        if (rtdb) {
+          await rtdbSet(rtdbRef(rtdb, `services/${service.id}`), service);
+        } else if (db) {
+          await setDoc(doc(db, "services", service.id), service);
+        }
+      }
       await fetch("/api/services", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(service)
-      });
+      }).catch((e) => console.warn("API fallback ignored (expected on Vercel):", e));
+      
       setServices((prev) => prev.map((s) => (s.id === service.id ? service : s)));
     } catch (err) {
       console.error("Error saving service:", err);
@@ -868,7 +965,14 @@ export default function App() {
   };
   const handleDeleteService = async (id: string) => {
     try {
-      await fetch(`/api/services/${id}`, { method: "DELETE" });
+      if (!isPlaceholderFirebase) {
+        if (rtdb) {
+          await rtdbSet(rtdbRef(rtdb, `services/${id}`), null);
+        } else if (db) {
+          await deleteDoc(doc(db, "services", id));
+        }
+      }
+      await fetch(`/api/services/${id}`, { method: "DELETE" }).catch((e) => console.warn("API fallback ignored (expected on Vercel):", e));
       setServices((prev) => prev.filter((s) => s.id !== id));
     } catch (err) {
       console.error("Error deleting service:", err);
@@ -877,11 +981,19 @@ export default function App() {
 
   const handleSaveCategory = async (cat: CategoryItem) => {
     try {
+      if (!isPlaceholderFirebase) {
+        if (rtdb) {
+          await rtdbSet(rtdbRef(rtdb, `categories/${cat.id}`), cat);
+        } else if (db) {
+          await setDoc(doc(db, "categories", cat.id), cat);
+        }
+      }
       await fetch("/api/categories", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(cat)
-      });
+      }).catch((e) => console.warn("API fallback ignored (expected on Vercel):", e));
+      
       setCategories((prev) => {
         const idx = prev.findIndex((c) => c.id === cat.id);
         if (idx !== -1) {
@@ -899,7 +1011,14 @@ export default function App() {
 
   const handleDeleteCategory = async (id: string) => {
     try {
-      await fetch(`/api/categories/${id}`, { method: "DELETE" });
+      if (!isPlaceholderFirebase) {
+        if (rtdb) {
+          await rtdbSet(rtdbRef(rtdb, `categories/${id}`), null);
+        } else if (db) {
+          await deleteDoc(doc(db, "categories", id));
+        }
+      }
+      await fetch(`/api/categories/${id}`, { method: "DELETE" }).catch((e) => console.warn("API fallback ignored (expected on Vercel):", e));
       setCategories((prev) => prev.filter((c) => c.id !== id));
     } catch (err) {
       console.error("Error deleting category:", err);
