@@ -3,6 +3,8 @@ import { Scheme, Job, Scholarship, ServiceItem, AppUpdate, CategoryItem } from "
 import { 
   Plus, 
   Trash, 
+  Trash2,
+  Zap,
   Settings, 
   PieChart, 
   Bell, 
@@ -167,6 +169,247 @@ export default function AdminPanel({
   const [serviceSteps, setServiceSteps] = useState("");
   const [serviceUrl, setServiceUrl] = useState("");
   const [serviceLogoUrl, setServiceLogoUrl] = useState("");
+
+  // Service SubLinks state
+  const [serviceSubLinks, setServiceSubLinks] = useState<{ label: string; url: string; desc: string }[]>([]);
+  const [newSubLinkLabel, setNewSubLinkLabel] = useState("");
+  const [newSubLinkUrl, setNewSubLinkUrl] = useState("");
+  const [newSubLinkDesc, setNewSubLinkDesc] = useState("");
+  const [editingSubLinkIndex, setEditingSubLinkIndex] = useState<number | null>(null);
+
+  const getLocalDefaultSubLinks = (id: string, officialUrl: string) => {
+    switch (id) {
+      case "srv1": // Aadhaar Card
+        return [
+          {
+            label: "আধার আবেদনের লিঙ্ক (Check Enrolment & Update Status)",
+            url: "https://myaadhaar.uidai.gov.in/CheckAadhaarStatus",
+            desc: "SRN / Enrolment ID এবং ওটিপি দিয়ে স্ট্যাটাস দেখুন"
+          },
+          {
+            label: "ই-আধার অনলাইন ডাউনলোড (Download e-Aadhaar PDF)",
+            url: "https://myaadhaar.uidai.gov.in/gen-download-aadhaar",
+            desc: "আধার নম্বর ও ওটিপি দিয়ে সরাসরি ডাউনলোড করুন"
+          },
+          {
+            label: "লিঙ্কড মোবাইল নাম্বার চেক (Verify Email & Mobile)",
+            url: "https://myaadhaar.uidai.gov.in/verify-email-mobile",
+            desc: "কোন মোবাইল নম্বর আধারের সাথে যুক্ত আছে জেনে নিন"
+          },
+          {
+            label: "আধার কেন্দ্র অনলাইন বুকিং (Book Aadhaar Appointment)",
+            url: "https://appointments.uidai.gov.in/bookappointment.aspx",
+            desc: "নিকটবর্তী আধার সেবা কেন্দ্রে অ্যাপয়েন্টমেন্ট বুকিং লিঙ্ক"
+          }
+        ];
+      case "srv2": // PAN Card
+        return [
+          {
+            label: "প্যান কার্ড স্ট্যাটাস ট্র্যাকিং করুন (Track PAN Card)",
+            url: "https://tin.tin.nsdl.com/pantan/StatusTrack.html",
+            desc: "NSDL পোর্টালে Acknowledgement নম্বর দিয়ে দেখুন"
+          },
+          {
+            label: "প্যান আধার লিঙ্ক স্ট্যাটাস জানুন (PAN-Aadhaar Link Status)",
+            url: "https://eportal.incometax.gov.in/iec/foservices/#/pre-login/link-aadhaar-status",
+            desc: "আপনার প্যান কার্ডটি আধার সাথে লিঙ্কড আছে কি না চেক করুন"
+          },
+          {
+            label: "ই-প্যান ডাউনলোড করুন সরাসরি (Download Instant e-PAN)",
+            url: "https://www.onlineservices.nsdl.com/paam/MPanLogin.html",
+            desc: "অনলাইন NSDL পোর্টাল থেকে ডিজিটাল ই-প্যান ডাউনলোড করুন"
+          }
+        ];
+      case "srv7": // Voter ID
+        return [
+          {
+            label: "ভোটার তালিকায় নাম অনুসন্ধান (Search Elector Roll)",
+            url: "https://electoralsearch.eci.gov.in/",
+            desc: "আপনার নাম বা EPIC ভোটার কার্ড নম্বর দিয়ে সার্চ করুন"
+          },
+          {
+            label: "ভোটার আবেদন স্ট্যাটাস ট্র্যাক (Track Voter Application)",
+            url: "https://voters.eci.gov.in/track-application-status",
+            desc: "আবেদন করার পর Reference ID দিয়ে বর্তমান স্ট্যাটাস জানুন"
+          },
+          {
+            label: "ডিজিটাল ভোটার কার্ড ডাউনলোড (Download e-EPIC PDF)",
+            url: "https://voters.eci.gov.in/download-epic",
+            desc: "নির্বাচনী পরিচয়পত্রের ডিজিটাল কপি ওটিপি দিয়ে ডাউনলোড করুন"
+          }
+        ];
+      case "srv8": // Ration Card
+        return [
+          {
+            label: "রেশন কার্ড আবেদন স্ট্যাটাস চেক (Track Ration Status)",
+            url: "https://food.wb.gov.in/index.aspx",
+            desc: "খাদ্য দপ্তরের পোর্টালে কার্ডের বর্তমান বিবরণী ট্র্যাকিং করুন"
+          },
+          {
+            label: "রেশন কার্ড ও আধার লিঙ্ক লিংক (Link Aadhaar with Ration)",
+            url: "https://food.wb.gov.in/Link_Aadhaar.aspx",
+            desc: "বাড়িতে বসেই রেশন কার্ডের সাথে মোবাইল ও আধার নথিভুক্ত করুন"
+          },
+          {
+            label: "ই-রেশন কার্ড অনলাইন ডাউনলোড (Download e-Ration Card)",
+            url: "https://food.wb.gov.in/e_RationCard_Download.aspx",
+            desc: "ডিজিটাল রেশন কার্ডের কপি ডাউনলোড করে প্রিন্ট নিন"
+          }
+        ];
+      case "srv3": // Birth Certificate
+        return [
+          {
+            label: "জন্ম শংসাপত্র স্ট্যাটাস চেক করুন (Track Birth App)",
+            url: "https://janma-mrityutathya.wb.gov.in/index.php/citizens/track-application",
+            desc: "Ack বা রেজিস্ট্রেশন নম্বর দিয়ে আবেদনের অগ্রগতি পরীক্ষা করুন"
+          },
+          {
+            label: "ডিজিটাল জন্ম শংসাপত্র ডাউনলোড (Download Birth Certificate)",
+            url: "https://janma-mrityutathya.wb.gov.in/index.php/citizens/download-certificate",
+            desc: "অনুমোদিত ও ভেরিফায়েড জন্ম তথ্য সার্টিফিকেট অনলাইন ডাউনলোড"
+          }
+        ];
+      case "srv4": // Caste Certificate
+        return [
+          {
+            label: "কাস্ট সার্টিফিকেট স্ট্যাটাস জানুন (Track Caste App)",
+            url: "http://casterepresentationwb.gov.in/track_application",
+            desc: "SC / ST / OBC আবেদনের রিসিভ নম্বর দিয়ে যাচাই করুন"
+          },
+          {
+            label: "কাস্ট সার্টিফিকেট ডিটেইলস ভেরিফিকেশন (Verify Caste Card)",
+            url: "http://casterepresentationwb.gov.in/view_certificate",
+            desc: "অনুমোদিত সার্টিফিকেটের সত্যতা ও রেজিস্টার নম্বর মিলিয়ে নিন"
+          }
+        ];
+      case "srv5": // Income Certificate
+        return [
+          {
+            label: "আয় শংসাপত্র আবেদন স্ট্যাটাস ট্র্যাক (Track Income App)",
+            url: "https://edistrict.wb.gov.in/pace/trackApplication.action",
+            desc: "ই-ডিস্ট্রিক্ট পোর্টালে AIN নম্বর আপলোড করে চেক করুন"
+          },
+          {
+            label: "আয় শংসাপত্র ভেরিফিকেশন (Verify Income Certificate)",
+            url: "https://edistrict.wb.gov.in/pace/verificationLink.action",
+            desc: "ডিজিটাল সিগনেচার ও ওরিজিনাল বারকোড সার্টিফিকেট চেক করুন"
+          }
+        ];
+      case "srv11": // Death Certificate
+        return [
+          {
+            label: "মৃত্যু শংসাপত্র স্ট্যাটাস খোঁজ (Track Death Application)",
+            url: "https://janma-mrityutathya.wb.gov.in/index.php/citizens/track-application",
+            desc: "Ack/রেজিস্ট্রেশন নম্বর দিয়ে বর্তমান অবস্থা যাচাই করুন"
+          },
+          {
+            label: "ডিজিটাল মৃত্যু শংসাপত্র ডাউনলোড (Download e-Death Certificate)",
+            url: "https://janma-mrityutathya.wb.gov.in/index.php/citizens/download-certificate",
+            desc: "অনলাইনে ডিজিটালি ভেরিফায়েড ডেথ সার্টিফিকেট ডাউনলোড"
+          }
+        ];
+      case "srv6": // PAN Aadhaar Link
+        return [
+          {
+            label: "লিঙ্ক করার সরাসরি লিঙ্ক (Link Aadhaar with PAN)",
+            url: "https://eportal.incometax.gov.in/iec/foservices/#/pre-login/link-aadhaar",
+            desc: "প্যান কার্ডের সাথে আধার লিঙ্কিং অনলাইন পোর্টাল"
+          },
+          {
+            label: "লিঙ্ক স্ট্যাটাস যাচাই (Check Link Status)",
+            url: "https://eportal.incometax.gov.in/iec/foservices/#/pre-login/link-aadhaar-status",
+            desc: "আপনার কার্ড দুটি যুক্ত সফল হয়েছে কি না তা দেখুন"
+          }
+        ];
+      case "srv9": // Passport
+        return [
+          {
+            label: "পাসপোর্ট ফাইল স্ট্যাটাস ট্র্যাকিং (Track Passport Status)",
+            url: "https://portal2.passportindia.gov.in/AppOnlineProject/statusTracker/trackStatusInpNew",
+            desc: "ফাইল নাম্বার ও জন্মতারিখ দিয়ে আবেদনের স্থিতি জানুন"
+          },
+          {
+            label: "অফিস স্লট উপলব্ধতা চেক (Check Appointment Availability)",
+            url: "https://portal2.passportindia.gov.in/AppOnlineProject/online/appointmentAvailState",
+            desc: "নিকটবর্তী পাসপোর্ট অফিসে কয়টি স্লট ফাঁকা আছে দেখে নিন"
+          }
+        ];
+      case "srv10": // Driving License
+        return [
+          {
+            label: "লাইসেন্স আবেদনের সরাসরি ট্র্যাকিং (Link Sarathi Application)",
+            url: "https://sarathi.parivahan.gov.in/sarathiservice/applViewStatus.do",
+            desc: "আবেদন নম্বর এবং জন্মতারিখ দিয়ে স্ট্যাটাস ট্র্যাকিং করুন"
+          },
+          {
+            label: "লার্নার টেস্ট অনলাইন মক প্র্যাক্টিস (LL Road Safety Test)",
+            url: "https://sarathi.parivahan.gov.in/sarathiservice/mockTestInp.do",
+            desc: "লার্নার স্ক্রিনিং টেস্টের জন্য বিনামূল্যে মক প্রশ্ন প্র্যাকটিস"
+          }
+        ];
+      default:
+        return [
+          {
+            label: "সরাসরি অফিসিয়াল পোর্টাল লিংক (Official Direct Link)",
+            url: officialUrl,
+            desc: "অফিসিয়াল ওয়েবসাইটে প্রবেশ করে আবেদন বা অনুসন্ধান করুন"
+          }
+        ];
+    }
+  };
+
+  const startEditSubLink = (idx: number) => {
+    const link = serviceSubLinks[idx];
+    if (link) {
+      setNewSubLinkLabel(link.label);
+      setNewSubLinkUrl(link.url);
+      setNewSubLinkDesc(link.desc || "");
+      setEditingSubLinkIndex(idx);
+    }
+  };
+
+  const cancelEditSubLink = () => {
+    setNewSubLinkLabel("");
+    setNewSubLinkUrl("");
+    setNewSubLinkDesc("");
+    setEditingSubLinkIndex(null);
+  };
+
+  const handleAddSubLink = () => {
+    if (!newSubLinkLabel.trim() || !newSubLinkUrl.trim()) {
+      showNotification("লিঙ্কের নাম এবং ওয়েব অ্যাড্রেস (URL) দিতে হবে!");
+      return;
+    }
+    const item = {
+      label: newSubLinkLabel.trim(),
+      url: newSubLinkUrl.trim(),
+      desc: newSubLinkDesc.trim()
+    };
+
+    if (editingSubLinkIndex !== null) {
+      setServiceSubLinks(prev => prev.map((link, idx) => idx === editingSubLinkIndex ? item : link));
+      setEditingSubLinkIndex(null);
+      showNotification("সরাসরি লিঙ্কটি সফলভাবে সংশোধন করা হয়েছে!");
+    } else {
+      setServiceSubLinks(prev => [
+        ...prev,
+        item
+      ]);
+      showNotification("সরাসরি লিঙ্কটি যোগ করা হয়েছে!");
+    }
+    setNewSubLinkLabel("");
+    setNewSubLinkUrl("");
+    setNewSubLinkDesc("");
+  };
+
+  const handleRemoveSubLink = (idx: number) => {
+    setServiceSubLinks(prev => prev.filter((_, i) => i !== idx));
+    if (editingSubLinkIndex === idx) {
+      cancelEditSubLink();
+    } else if (editingSubLinkIndex !== null && editingSubLinkIndex > idx) {
+      setEditingSubLinkIndex(prev => prev !== null ? prev - 1 : null);
+    }
+  };
 
   // 5. App Updates
   const [updateTitle, setUpdateTitle] = useState("");
@@ -416,6 +659,16 @@ export default function AdminPanel({
     setServiceSteps(item.steps ? item.steps.join("\n") : "");
     setServiceUrl(item.officialUrl);
     setServiceLogoUrl(item.logoUrl || "");
+    
+    // Seed defaults if subLinks are empty/null to make editing super friendly:
+    const defaults = getLocalDefaultSubLinks(item.id, item.officialUrl || "https://wb.gov.in");
+    setServiceSubLinks(item.subLinks && item.subLinks.length > 0 ? item.subLinks : defaults);
+    
+    setNewSubLinkLabel("");
+    setNewSubLinkUrl("");
+    setNewSubLinkDesc("");
+    setEditingSubLinkIndex(null);
+
     window.scrollTo({ top: 320, behavior: "smooth" });
   };
 
@@ -426,6 +679,11 @@ export default function AdminPanel({
     setServiceSteps("");
     setServiceUrl("");
     setServiceLogoUrl("");
+    setServiceSubLinks([]);
+    setNewSubLinkLabel("");
+    setNewSubLinkUrl("");
+    setNewSubLinkDesc("");
+    setEditingSubLinkIndex(null);
   };
 
   const handleServiceSubmit = async (e: React.FormEvent) => {
@@ -445,7 +703,8 @@ export default function AdminPanel({
         "প্রয়োজনীয় নথি আপলোড করে আবেদন সমাপ্ত করুন।"
       ],
       officialUrl: serviceUrl || "https://wb.gov.in",
-      logoUrl: serviceLogoUrl || ""
+      logoUrl: serviceLogoUrl || "",
+      subLinks: serviceSubLinks
     };
 
     try {
@@ -1126,7 +1385,7 @@ export default function AdminPanel({
             <form onSubmit={handleScholarshipSubmit} className="bg-slate-50 p-5 rounded-xl border border-slate-100 space-y-4">
               <h3 className="font-bold text-slate-800 flex items-center gap-1.5 text-sm md:text-base">
                 <PlusCircle className="h-4.5 w-4.5 text-bengali-orange" />
-                {editingScholarshipId ? "স্কলারশিপ বিবরণী সংশোধন করুন" : "নতুন মেধাবী স্কলারশিপ বা সহায়তা প্রকল্প যোগ করুন"}
+                {editingScholarshipId ? "স্কলারশিপ বিবরণী সংশোধন করুন" : "নতুন মেধাবী স্কলারশিপ বা বৃত্তি প্রকল্প যোগ করুন"}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -1141,7 +1400,7 @@ export default function AdminPanel({
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-slate-600 block mb-1">সহায়তা পরিমাণ / বাৎসরিক স্কলারশিপ রাশি *</label>
+                  <label className="text-xs font-bold text-slate-600 block mb-1">বাৎসরিক স্কলারশিপ রাশি / বৃত্তির পরিমাণ *</label>
                   <input
                     type="text"
                     required
@@ -1161,7 +1420,7 @@ export default function AdminPanel({
                     required
                     value={scholarshipDescription}
                     onChange={(e) => setScholarshipDescription(e.target.value)}
-                    placeholder="মেধাবী শিক্ষার্থীদের জন্য পশ্চিমবঙ্গ উচ্চশিক্ষা দপ্তরের বিশেষ আর্থিক সহায়তা যোজনা..."
+                    placeholder="মেধাবী শিক্ষার্থীদের জন্য পশ্চিমবঙ্গ উচ্চশিক্ষা দপ্তরের বিশেষ আর্থিক বৃত্তি যোজনা..."
                     className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-orange-500/10 focus:border-bengali-orange"
                   />
                 </div>
@@ -1392,6 +1651,128 @@ export default function AdminPanel({
                     placeholder="https://voters.eci.gov.in"
                     className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-orange-500/10 focus:border-bengali-orange"
                   />
+                </div>
+              </div>
+
+              {/* Dynamic Service Sublinks Section */}
+              <div className="bg-white/60 p-4 rounded-xl border border-slate-200 space-y-3.5 shadow-sm">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                  <div>
+                    <h4 className="text-xs font-extrabold text-slate-800 flex items-center gap-1.5 uppercase">
+                      <Zap className="h-4 w-4 text-bengali-orange animate-pulse" />
+                      গুরুত্বপূর্ণ সরাসরি লিঙ্ক ও সার্ভিসসমূহ ({serviceSubLinks.length})
+                    </h4>
+                    <p className="text-[10px] text-slate-500 mt-0.5 font-medium">পোর্টালে ক্লিক করার পর সরাসরি অ্যাকশনের জন্য লিঙ্কসমূহ এখানে যোগ করুন</p>
+                  </div>
+                </div>
+
+                {/* Sublinks List */}
+                {serviceSubLinks.length === 0 ? (
+                  <div className="py-4 text-center rounded-lg border border-dashed border-slate-200 bg-slate-50/50">
+                    <p className="text-xs text-slate-400 font-medium font-bengali">কোনো সরাসরি কাস্টম লিঙ্ক এখনও যুক্ত করা হয়নি। নিচে তথ্য দিয়ে নতুন লিঙ্ক যুক্ত করুন অথবা ডিফল্ট লিঙ্ক এডিট করুন।</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-56 overflow-y-auto pr-1">
+                    {serviceSubLinks.map((link, idx) => (
+                      <div key={idx} className={`flex items-start justify-between p-2.5 rounded-lg border transition-all ${editingSubLinkIndex === idx ? 'border-bengali-orange bg-orange-50/20' : 'border-slate-150 bg-slate-50 hover:bg-orange-50/20 hover:border-orange-200'}`}>
+                        <div className="min-w-0 pr-2">
+                          <p className="text-xs font-bold text-slate-800 truncate">
+                            {link.label}
+                            {editingSubLinkIndex === idx && (
+                              <span className="ml-1.5 inline-block text-[9px] bg-bengali-orange text-white px-1.5 py-0.5 rounded font-extrabold animation-pulse uppercase">সম্পাদনা চলছে</span>
+                            )}
+                          </p>
+                          <p className="text-[10px] text-slate-500 truncate mt-0.5">{link.desc || "কোনো সংক্ষিপ্ত বিবরণ নেই"}</p>
+                          <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-[9px] text-bengali-orange hover:underline truncate block mt-0.5 font-mono">{link.url}</a>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => startEditSubLink(idx)}
+                            className="text-amber-600 hover:text-amber-800 p-1 rounded hover:bg-amber-100 transition-colors cursor-pointer"
+                            title="লিঙ্কটি এডিট করুন"
+                          >
+                            <Edit3 className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveSubLink(idx)}
+                            className="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 transition-colors cursor-pointer"
+                            title="লিঙ্কটি মুছে ফেলুন"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Addition Controls */}
+                <div className="bg-slate-50/50 p-3 rounded-lg border border-slate-150 space-y-3">
+                  <p className="text-xs font-bold text-slate-700 flex items-center gap-1">
+                    {editingSubLinkIndex !== null ? "মনোনীত সরাসরি লিঙ্ক সংশোধন করুন:" : "নতুন সরাসরি লিঙ্ক যোগ করুন:"}
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-600 block mb-0.5 font-bengali">লিঙ্কের নাম বা লেবেল *</label>
+                      <input
+                        type="text"
+                        value={newSubLinkLabel}
+                        onChange={(e) => setNewSubLinkLabel(e.target.value)}
+                        placeholder="যেমন: নতুন ভোটার কার্ডের স্ট্যাটাস ট্র্যাকিং"
+                        className="w-full rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-bengali-orange shadow-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-600 block mb-0.5 font-bengali">সরাসরি ওয়েব ওয়েব লিঙ্ক (URL) *</label>
+                      <input
+                        type="text"
+                        value={newSubLinkUrl}
+                        onChange={(e) => setNewSubLinkUrl(e.target.value)}
+                        placeholder="https://voters.eci.gov.in/track"
+                        className="w-full rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-bengali-orange shadow-sm"
+                      />
+                    </div>
+                    <div className="sm:col-span-2 lg:col-span-1">
+                      <label className="text-[10px] font-bold text-slate-600 block mb-0.5 font-bengali">সংক্ষিপ্ত বিবরণ বা নোট (ঐচ্ছিক)</label>
+                      <input
+                        type="text"
+                        value={newSubLinkDesc}
+                        onChange={(e) => setNewSubLinkDesc(e.target.value)}
+                        placeholder="Reference ID দিয়ে স্ট্যাটাস জানুন"
+                        className="w-full rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-bengali-orange shadow-sm"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-1.5">
+                    {editingSubLinkIndex !== null && (
+                      <button
+                        type="button"
+                        onClick={cancelEditSubLink}
+                        className="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold py-1.5 px-4 rounded-md transition-colors cursor-pointer font-bold"
+                      >
+                        বাতিল করুন
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleAddSubLink}
+                      className="bg-slate-800 hover:bg-slate-950 text-white text-xs font-bold py-1.5 px-4 rounded-md transition-colors flex items-center gap-1 shadow-xs cursor-pointer font-bold"
+                    >
+                      {editingSubLinkIndex !== null ? (
+                        <>
+                          <Check className="h-3.5 w-3.5" />
+                          লিঙ্ক পরিবর্তন সংরক্ষণ করুন
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="h-3.5 w-3.5" />
+                          লিঙ্ক তালিকায় যুক্ত করুন
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -1745,7 +2126,7 @@ export default function AdminPanel({
                 }
               }} className="space-y-5">
                 <div>
-                  <label className="text-[11px] font-extrabold text-slate-700 block mb-2">Gemini API Key (সহায়তা চ্যাট জন্য)</label>
+                  <label className="text-[11px] font-extrabold text-slate-700 block mb-2">Gemini API Key (এআই চ্যাট এর জন্য)</label>
                   <div className="relative rounded-lg shadow-sm">
                     <input
                       type={showApiKey ? "text" : "password"}

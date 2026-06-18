@@ -370,6 +370,326 @@ const getCategoryStyle = (id: string) => {
   }
 };
 
+const getServiceMetadata = (id: string, cat: string) => {
+  let rating = 4.5;
+  const charSum = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  rating = 4.5 + (charSum % 5) * 0.1;
+  if (rating > 4.9) rating = 4.9;
+
+  let badgeText = "অফিসিয়াল";
+  let badgeType: 'official' | 'free' | 'popular' = 'official';
+
+  if (cat === "jobs") {
+    badgeText = "নতুন নিয়োগ";
+    badgeType = 'popular';
+  } else if (cat === "scholarships") {
+    badgeText = "জনপ্রিয়";
+    badgeType = 'popular';
+  } else if (cat === "welfare") {
+    badgeText = "বিনামূল্যে";
+    badgeType = 'free';
+  } else if (cat === "utility") {
+    badgeText = "ডিজিটাল সেবা";
+    badgeType = 'free';
+  } else if (cat === "cyber_cafe") {
+    badgeText = "বিশেষ সেবা";
+    badgeType = 'popular';
+  } else if (id.includes("srv1") || id.includes("srv2") || id.includes("srv7") || id.includes("srv9")) {
+    badgeText = "অফিসিয়াল";
+    badgeType = 'official';
+  }
+  
+  return { rating: rating.toFixed(1), badgeText, badgeType };
+};
+
+const getCategoryColorAccent = (cat: string) => {
+  switch (cat) {
+    case "jobs":
+      return {
+        gradient: "from-white/95 via-white/95 to-blue-50/20",
+        glow: "hover:shadow-blue-500/10 hover:shadow-2xl",
+        iconBg: "bg-gradient-to-br from-blue-50 to-indigo-50/60",
+        iconBorder: "border-blue-100",
+        badgeBg: "bg-blue-50 text-blue-700 border-blue-100",
+        badgeDot: "bg-blue-500",
+        borderAccent: "hover:border-blue-300",
+        arrowClass: "bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white"
+      };
+    case "scholarships":
+      return {
+        gradient: "from-white/95 via-white/95 to-emerald-50/20",
+        glow: "hover:shadow-emerald-500/10 hover:shadow-2xl",
+        iconBg: "bg-gradient-to-br from-emerald-50 to-teal-50/60",
+        iconBorder: "border-emerald-100",
+        badgeBg: "bg-emerald-50 text-emerald-700 border-emerald-100",
+        badgeDot: "bg-emerald-500",
+        borderAccent: "hover:border-emerald-300",
+        arrowClass: "bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white"
+      };
+    case "welfare":
+      return {
+        gradient: "from-white/95 via-white/95 to-orange-50/20",
+        glow: "hover:shadow-orange-500/10 hover:shadow-2xl",
+        iconBg: "bg-gradient-to-br from-orange-50 to-amber-50/60",
+        iconBorder: "border-orange-100",
+        badgeBg: "bg-orange-50 text-orange-700 border-orange-100/60",
+        badgeDot: "bg-orange-500",
+        borderAccent: "hover:border-orange-300",
+        arrowClass: "bg-orange-50 text-orange-600 group-hover:bg-orange-600 group-hover:text-white"
+      };
+    case "identity":
+      return {
+        gradient: "from-white/95 via-white/95 to-violet-50/20",
+        glow: "hover:shadow-violet-500/10 hover:shadow-2xl",
+        iconBg: "bg-gradient-to-br from-violet-50 to-fuchsia-50/60",
+        iconBorder: "border-violet-100",
+        badgeBg: "bg-violet-50 text-violet-700 border-violet-100",
+        badgeDot: "bg-violet-500",
+        borderAccent: "hover:border-violet-300",
+        arrowClass: "bg-violet-50 text-violet-600 group-hover:bg-violet-600 group-hover:text-white"
+      };
+    case "utility":
+      return {
+        gradient: "from-white/95 via-white/95 to-teal-50/20",
+        glow: "hover:shadow-teal-500/10 hover:shadow-2xl",
+        iconBg: "bg-gradient-to-br from-teal-50 to-cyan-50/60",
+        iconBorder: "border-teal-100",
+        badgeBg: "bg-teal-50 text-teal-700 border-teal-100",
+        badgeDot: "bg-teal-500",
+        borderAccent: "hover:border-teal-300",
+        arrowClass: "bg-teal-50 text-teal-600 group-hover:bg-teal-600 group-hover:text-white"
+      };
+    case "health":
+      return {
+        gradient: "from-white/95 via-white/95 to-rose-50/20",
+        glow: "hover:shadow-rose-500/10 hover:shadow-2xl",
+        iconBg: "bg-gradient-to-br from-rose-50 to-pink-50/60",
+        iconBorder: "border-rose-100",
+        badgeBg: "bg-rose-50 text-rose-700 border-rose-100",
+        badgeDot: "bg-rose-500",
+        borderAccent: "hover:border-rose-300",
+        arrowClass: "bg-rose-50 text-rose-600 group-hover:bg-rose-600 group-hover:text-white"
+      };
+    case "land":
+      return {
+        gradient: "from-white/95 via-white/95 to-amber-50/20",
+        glow: "hover:shadow-amber-500/10 hover:shadow-2xl",
+        iconBg: "bg-gradient-to-br from-amber-50 to-yellow-50/60",
+        iconBorder: "border-amber-100",
+        badgeBg: "bg-amber-50 text-amber-805 border-amber-100/60",
+        badgeDot: "bg-amber-600",
+        borderAccent: "hover:border-amber-300",
+        arrowClass: "bg-amber-50 text-amber-700 group-hover:bg-amber-600 group-hover:text-white"
+      };
+    case "cyber_cafe":
+      return {
+        gradient: "from-white/95 via-white/95 to-amber-50/25",
+        glow: "hover:shadow-orange-500/10 hover:shadow-2xl",
+        iconBg: "bg-gradient-to-br from-orange-50 to-amber-100/65",
+        iconBorder: "border-orange-100",
+        badgeBg: "bg-orange-50 text-orange-700 border-orange-100",
+        badgeDot: "bg-orange-500",
+        borderAccent: "hover:border-orange-300",
+        arrowClass: "bg-orange-50 text-orange-600 group-hover:bg-orange-600 group-hover:text-white"
+      };
+    default:
+      return {
+        gradient: "from-white/95 via-white/95 to-slate-50/40",
+        glow: "hover:shadow-slate-500/5 hover:shadow-2xl",
+        iconBg: "bg-gradient-to-br from-slate-50 to-zinc-50/60",
+        iconBorder: "border-slate-200/60",
+        badgeBg: "bg-slate-100 text-slate-700 border-slate-200/60",
+        badgeDot: "bg-slate-400",
+        borderAccent: "hover:border-slate-300",
+        arrowClass: "bg-slate-50 text-slate-600 group-hover:bg-slate-600 group-hover:text-white"
+      };
+  }
+};
+
+const getServiceSubLinks = (id: string, officialUrl: string, customSubLinks?: { label: string; url: string; desc: string }[]) => {
+  if (customSubLinks && customSubLinks.length > 0) {
+    return customSubLinks;
+  }
+  switch (id) {
+    case "srv1": // Aadhaar Card
+      return [
+        {
+          label: "আধার আবেদনের লিঙ্ক (Check Enrolment & Update Status)",
+          url: "https://myaadhaar.uidai.gov.in/CheckAadhaarStatus",
+          desc: "SRN / Enrolment ID এবং ওটিপি দিয়ে স্ট্যাটাস দেখুন"
+        },
+        {
+          label: "ই-আধার অনলাইন ডাউনলোড (Download e-Aadhaar PDF)",
+          url: "https://myaadhaar.uidai.gov.in/gen-download-aadhaar",
+          desc: "আধার নম্বর ও ওটিপি দিয়ে সরাসরি ডাউনলোড করুন"
+        },
+        {
+          label: "লিঙ্কড মোবাইল নাম্বার চেক (Verify Email & Mobile)",
+          url: "https://myaadhaar.uidai.gov.in/verify-email-mobile",
+          desc: "কোন মোবাইল নম্বর আধারের সাথে যুক্ত আছে জেনে নিন"
+        },
+        {
+          label: "আধার কেন্দ্র অনলাইন বুকিং (Book Aadhaar Appointment)",
+          url: "https://appointments.uidai.gov.in/bookappointment.aspx",
+          desc: "নিকটবর্তী আধার সেবা কেন্দ্রে অ্যাপয়েন্টমেন্ট বুকিং লিঙ্ক"
+        }
+      ];
+    case "srv2": // PAN Card
+      return [
+        {
+          label: "প্যান কার্ড স্ট্যাটাস ট্র্যাকিং করুন (Track PAN Card)",
+          url: "https://tin.tin.nsdl.com/pantan/StatusTrack.html",
+          desc: "NSDL পোর্টালে Acknowledgement নম্বর দিয়ে দেখুন"
+        },
+        {
+          label: "প্যান আধার লিঙ্ক স্ট্যাটাস জানুন (PAN-Aadhaar Link Status)",
+          url: "https://eportal.incometax.gov.in/iec/foservices/#/pre-login/link-aadhaar-status",
+          desc: "আপনার প্যান কার্ডটি আধার সাথে লিঙ্কড আছে কি না চেক করুন"
+        },
+        {
+          label: "ই-প্যান ডাউনলোড করুন সরাসরি (Download Instant e-PAN)",
+          url: "https://www.onlineservices.nsdl.com/paam/MPanLogin.html",
+          desc: "অনলাইন NSDL পোর্টাল থেকে ডিজিটাল ই-প্যান ডাউনলোড করুন"
+        }
+      ];
+    case "srv7": // Voter ID
+      return [
+        {
+          label: "ভোটার তালিকায় নাম অনুসন্ধান (Search Elector Roll)",
+          url: "https://electoralsearch.eci.gov.in/",
+          desc: "আপনার নাম বা EPIC ভোটার কার্ড নম্বর দিয়ে সার্চ করুন"
+        },
+        {
+          label: "ভোটার আবেদন স্ট্যাটাস ট্র্যাক (Track Voter Application)",
+          url: "https://voters.eci.gov.in/track-application-status",
+          desc: "আবেদন করার পর Reference ID দিয়ে বর্তমান স্ট্যাটাস জানুন"
+        },
+        {
+          label: "ডিজিটাল ভোটার কার্ড ডাউনলোড (Download e-EPIC PDF)",
+          url: "https://voters.eci.gov.in/download-epic",
+          desc: "নির্বাচনী পরিচয়পত্রের ডিজিটাল কপি ওটিপি দিয়ে ডাউনলোড করুন"
+        }
+      ];
+    case "srv8": // Ration Card
+      return [
+        {
+          label: "রেশন কার্ড আবেদন স্ট্যাটাস চেক (Track Ration Status)",
+          url: "https://food.wb.gov.in/index.aspx",
+          desc: "খাদ্য দপ্তরের পোর্টালে কার্ডের বর্তমান বিবরণী ট্র্যাকিং করুন"
+        },
+        {
+          label: "রেশন কার্ড ও আধার লিঙ্ক লিংক (Link Aadhaar with Ration)",
+          url: "https://food.wb.gov.in/Link_Aadhaar.aspx",
+          desc: "বাড়িতে বসেই রেশন কার্ডের সাথে মোবাইল ও আধার নথিভুক্ত করুন"
+        },
+        {
+          label: "ই-রেশন কার্ড অনলাইন ডাউনলোড (Download e-Ration Card)",
+          url: "https://food.wb.gov.in/e_RationCard_Download.aspx",
+          desc: "ডিজিটাল রেশন কার্ডের কপি ডাউনলোড করে প্রিন্ট নিন"
+        }
+      ];
+    case "srv3": // Birth Certificate
+      return [
+        {
+          label: "জন্ম শংসাপত্র স্ট্যাটাস চেক করুন (Track Birth App)",
+          url: "https://janma-mrityutathya.wb.gov.in/index.php/citizens/track-application",
+          desc: "Ack বা রেজিস্ট্রেশন নম্বর দিয়ে আবেদনের অগ্রগতি পরীক্ষা করুন"
+        },
+        {
+          label: "ডিজিটাল জন্ম শংসাপত্র ডাউনলোড (Download Birth Certificate)",
+          url: "https://janma-mrityutathya.wb.gov.in/index.php/citizens/download-certificate",
+          desc: "অনুমোদিত ও ভেরিফায়েড জন্ম তথ্য সার্টিফিকেট অনলাইন ডাউনলোড"
+        }
+      ];
+    case "srv4": // Caste Certificate
+      return [
+        {
+          label: "কাস্ট সার্টিফিকেট স্ট্যাটাস জানুন (Track Caste App)",
+          url: "http://casterepresentationwb.gov.in/track_application",
+          desc: "SC / ST / OBC আবেদনের রিসিভ নম্বর দিয়ে যাচাই করুন"
+        },
+        {
+          label: "কাস্ট সার্টিফিকেট ডিটেইলস ভেরিফিকেশন (Verify Caste Card)",
+          url: "http://casterepresentationwb.gov.in/view_certificate",
+          desc: "অনুমোদিত সার্টিফিকেটের সত্যতা ও রেজিস্টার নম্বর মিলিয়ে নিন"
+        }
+      ];
+    case "srv5": // Income Certificate
+      return [
+        {
+          label: "আয় শংসাপত্র আবেদন স্ট্যাটাস ট্র্যাক (Track Income App)",
+          url: "https://edistrict.wb.gov.in/pace/trackApplication.action",
+          desc: "ই-ডিস্ট্রিক্ট পোর্টালে AIN নম্বর আপলোড করে চেক করুন"
+        },
+        {
+          label: "আয় শংসাপত্র ভেরিফিকেশন (Verify Income Certificate)",
+          url: "https://edistrict.wb.gov.in/pace/verificationLink.action",
+          desc: "ডিজিটাল সিগনেচার ও ওরিজিনাল বারকোড সার্টিফিকেট চেক করুন"
+        }
+      ];
+    case "srv11": // Death Certificate
+      return [
+        {
+          label: "মৃত্যু শংসাপত্র স্ট্যাটাস খোঁজ (Track Death Application)",
+          url: "https://janma-mrityutathya.wb.gov.in/index.php/citizens/track-application",
+          desc: "Ack/রেজিস্ট্রেশন নম্বর দিয়ে বর্তমান অবস্থা যাচাই করুন"
+        },
+        {
+          label: "ডিজিটাল মৃত্যু শংসাপত্র ডাউনলোড (Download e-Death Certificate)",
+          url: "https://janma-mrityutathya.wb.gov.in/index.php/citizens/download-certificate",
+          desc: "অনলাইনে ডিজিটালি ভেরিফায়েড ডেথ সার্টিফিকেট ডাউনলোড"
+        }
+      ];
+    case "srv6": // PAN Aadhaar Link
+      return [
+        {
+          label: "লিঙ্ক করার সরাসরি লিঙ্ক (Link Aadhaar with PAN)",
+          url: "https://eportal.incometax.gov.in/iec/foservices/#/pre-login/link-aadhaar",
+          desc: "প্যান কার্ডের সাথে আধার লিঙ্কিং অনলাইন পোর্টাল"
+        },
+        {
+          label: "লিঙ্ক স্ট্যাটাস যাচাই (Check Link Status)",
+          url: "https://eportal.incometax.gov.in/iec/foservices/#/pre-login/link-aadhaar-status",
+          desc: "আপনার কার্ড দুটি যুক্ত সফল হয়েছে কি না তা দেখুন"
+        }
+      ];
+    case "srv9": // Passport
+      return [
+        {
+          label: "পাসপোর্ট ফাইল স্ট্যাটাস ট্র্যাকিং (Track Passport Status)",
+          url: "https://portal2.passportindia.gov.in/AppOnlineProject/statusTracker/trackStatusInpNew",
+          desc: "ফাইল নাম্বার ও জন্মতারিখ দিয়ে আবেদনের স্থিতি জানুন"
+        },
+        {
+          label: "অফিস স্লট উপলব্ধতা চেক (Check Appointment Availability)",
+          url: "https://portal2.passportindia.gov.in/AppOnlineProject/online/appointmentAvailState",
+          desc: "নিকটবর্তী পাসপোর্ট অফিসে কয়টি স্লট ফাঁকা আছে দেখে নিন"
+        }
+      ];
+    case "srv10": // Driving License
+      return [
+        {
+          label: "লাইসেন্স আবেদনের সরাসরি ট্র্যাকিং (Link Sarathi Application)",
+          url: "https://sarathi.parivahan.gov.in/sarathiservice/applViewStatus.do",
+          desc: "আবেদন নম্বর এবং জন্মতারিখ দিয়ে স্ট্যাটাস ট্র্যাকিং করুন"
+        },
+        {
+          label: "লার্নার টেস্ট অনলাইন মক প্র্যাক্টিস (LL Road Safety Test)",
+          url: "https://sarathi.parivahan.gov.in/sarathiservice/mockTestInp.do",
+          desc: "লার্নার স্ক্রিনিং টেস্টের জন্য বিনামূল্যে মক প্রশ্ন প্র্যাকটিস"
+        }
+      ];
+    default:
+      return [
+        {
+          label: "সরাসরি অফিসিয়াল পোর্টাল লিংক (Official Direct Link)",
+          url: officialUrl,
+          desc: "অফিসিয়াল ওয়েবসাইটে প্রবেশ করে আবেদন বা অনুসন্ধান করুন"
+        }
+      ];
+  }
+};
+
 export default function App() {
   // Global States (shared state for instant reactions)
   const [schemes, setSchemes] = useState<Scheme[]>([]);
@@ -485,7 +805,7 @@ export default function App() {
             subtitle: item.subtitle || item.categoryName || "ডিজিটাল সেবা",
             category: mappedCat,
             categoryName: item.categoryName || "সেবা",
-            description: item.description || "ডিজিটাল পোর্টাল আবেদন প্রক্রিয়া ও সহায়তা",
+            description: item.description || "ডিজিটাল পোর্টাল ও অনলাইন আবেদন প্রক্রিয়া",
             badge: item.badge || "ডিজিটাল",
             officialUrl: item.officialUrl || "https://wb.gov.in",
             btnText: item.btnText || "আবেদন লিংক",
@@ -1165,7 +1485,7 @@ export default function App() {
       {/* 1. TOP BROADCAST ALERT BAND (Persistent Info) */}
       <div className="bg-gradient-to-r from-[#A94F12] to-[#E96A1F] text-white py-2 px-4 shadow-inner text-center text-xs md:text-sm font-semibold flex flex-col sm:flex-row items-center justify-center gap-2 relative z-50">
         <span className="bg-amber-400 text-slate-900 text-[10px] font-extrabold px-2 py-0.5 rounded-md uppercase leading-none shrink-0 tracking-wider animate-pulse">আজকের বিজ্ঞপ্তি</span>
-        <p className="whitespace-normal break-words leading-relaxed text-slate-50">পশ্চিমবঙ্গ নতুন জনকল্যাণ প্রকল্প, নিয়োগ বিজ্ঞপ্তি ও স্কলারশিপের সর্বশেষ নির্ভরযোগ্য তথ্য জানতে এআই সহায়তা চ্যাট ব্যবহার করুন।</p>
+        <p className="whitespace-normal break-words leading-relaxed text-slate-50">পশ্চিমবঙ্গ নতুন জনকল্যাণ প্রকল্প, নিয়োগ বিজ্ঞপ্তি ও স্কলারশিপের সর্বশেষ নির্ভরযোগ্য তথ্য জানতে এআই চ্যাট ব্যবহার করুন।</p>
       </div>
 
       {/* 2. TOP METADATA & ACCESSIBILITY WIDGETS BAR */}
@@ -1263,7 +1583,7 @@ export default function App() {
               { label: "হোম", href: "#hero" },
               { label: "অফিসিয়াল ওয়েবসাইট", href: "#services" },
               { label: "সাইবার ক্যাফে", href: "#cyber-cafe" },
-              { label: "সাহায্য ও সহায়তা", href: "#help" }
+              { label: "এআই চ্যাট", href: "#help" }
             ].map((item, idx) => {
               const isActive = activeNav === item.label;
               return (
@@ -1272,7 +1592,7 @@ export default function App() {
                     href={item.href}
                     onClick={(e) => {
                       setActiveNav(item.label);
-                      if (item.label === "সাহায্য ও সহায়তা") {
+                      if (item.label === "এআই চ্যাট") {
                         e.preventDefault();
                         setIsAiOpen(true);
                       } else if (item.label === "হোম") {
@@ -1288,7 +1608,7 @@ export default function App() {
                         e.preventDefault();
                         setDocCategory("cyber_cafe");
                         setTimeout(() => {
-                          document.getElementById("digital-document-hub-section")?.scrollIntoView({ behavior: "smooth" });
+                           document.getElementById("digital-document-hub-section")?.scrollIntoView({ behavior: "smooth" });
                         }, 50);
                       }
                     }}
@@ -1299,10 +1619,10 @@ export default function App() {
                     }`}
                   >
                     <span className="flex items-center gap-1.5">
-                      {item.label === "সাহায্য ও সহায়তা" && (
+                      {item.label === "এআই চ্যাট" && (
                         <MessageSquare className="h-3.5 w-3.5 text-amber-300 animate-pulse shrink-0" />
                       )}
-                      <span>{item.label === "সাহায্য ও সহায়তা" ? "সাহায্য ও সহায়তা (এআই চ্যাট)" : item.label}</span>
+                      <span>{item.label}</span>
                     </span>
                   </a>
                 </li>
@@ -1356,16 +1676,16 @@ export default function App() {
             {/* Simple Help / Ai shortcut - styled as a refined clean text tab link with chat icon */}
             <button
               onClick={() => {
-                setActiveNav("সাহায্য ও সহায়তা");
+                setActiveNav("এআই চ্যাট");
                 setIsAiOpen(true);
               }}
               className={`px-3 py-2.5 text-xs font-bold text-amber-300 hover:text-white flex items-center gap-1.5 whitespace-nowrap shrink-0 cursor-pointer relative ${
-                activeNav === "সাহায্য ও সহায়তা" ? "bg-[#8D3F0D]/60 font-extrabold" : ""
+                activeNav === "এআই চ্যাট" ? "bg-[#8D3F0D]/60 font-extrabold" : ""
               }`}
             >
               <MessageSquare className="h-3.5 w-3.5 text-amber-300 animate-pulse shrink-0" />
-              <span>সহায়তা (এআই চ্যাট)</span>
-              {activeNav === "সাহায্য ও সহায়তা" && (
+              <span>এআই চ্যাট</span>
+              {activeNav === "এআই চ্যাট" && (
                 <span className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-amber-400"></span>
               )}
             </button>
@@ -1537,7 +1857,7 @@ export default function App() {
                 </div>
 
                 {/* Compact side-by-side cards grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3.5">
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
                   {displayedItems.length === 0 ? (
                     <div className="col-span-full py-16 px-4 text-center bg-white/65 backdrop-blur-xs border border-dashed border-orange-200 rounded-3xl animate-fade-in flex flex-col items-center justify-center space-y-2">
                       <HelpCircle className="h-10 w-10 text-orange-300" />
@@ -1547,6 +1867,8 @@ export default function App() {
                   ) : (
                     displayedItems
                       .map((item) => {
+                        const { rating, badgeText } = getServiceMetadata(item.id, item.cat || item.category || "");
+                        const style = getCategoryColorAccent(item.cat || item.category || "");
                         return (
                           <div
                             key={item.id}
@@ -1562,19 +1884,23 @@ export default function App() {
                                 logoUrl: item.logoUrl || ""
                               });
                             }}
-                            className="relative bg-white border border-slate-200/80 rounded-2xl p-3 hover:shadow-md cursor-pointer transition-all hover:-translate-y-1 duration-300 flex flex-col justify-between h-[155px] overflow-hidden group select-none hover:border-orange-250/90"
+                            className={`p-2.5 xs:p-3.5 md:p-5 rounded-[22px] bg-gradient-to-br ${style.gradient} border border-slate-200/50 hover:shadow-xl ${style.glow} duration-300 hover:border-slate-350 cursor-pointer transition-all hover:-translate-y-1.5 group select-none flex items-center gap-2 xs:gap-3 md:gap-4 relative overflow-hidden backdrop-blur-md`}
+                            id={`service-card-${item.id}`}
                           >
-                            {/* Glow Gradient Stripe on Top simulating Real Plastic Smartcard overlay */}
-                            <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-orange-400 via-amber-400 to-emerald-400 opacity-80" />
-
-                            <div className="space-y-2">
-                              {/* Top Header Row of Card: Official Icon + Gold Chip */}
-                              <div className="flex items-center justify-between">
-                                {/* SVG Logo container */}
+                            {/* Accent Glow Circle inside card simulating Neumorphic Glass overlay */}
+                            <div className="absolute -top-12 -right-12 w-24 h-24 rounded-full bg-white/15 blur-xl group-hover:bg-white/20 transition-all duration-500" />
+                            
+                            {/* Inner horizontal layout container */}
+                            <div className="flex items-center gap-2 xs:gap-3 md:gap-4 w-full min-w-0">
+                              {/* 1. Large circular icon/logo area on the left */}
+                              <div className={`w-11 h-11 xs:w-12 xs:h-12 md:w-15 md:h-15 rounded-full flex items-center justify-center shrink-0 border ${style.iconBorder} ${style.iconBg} relative shadow-sm overflow-hidden bg-white [&_svg]:w-full [&_svg]:h-full [&_svg]:p-0.5`}>
+                                {/* Neumorph shadow details on the circle */}
+                                <div className="absolute inset-0 rounded-full bg-white/5 opacity-80" />
+                                
                                 {item.logoUrl ? (
                                   <img 
                                     src={item.logoUrl} 
-                                    className="w-10 h-10 rounded-lg object-contain border border-slate-100 p-0.5 bg-white shadow-3xs group-hover:scale-108 transition-all shrink-0" 
+                                    className="w-full h-full rounded-full object-cover p-0.5 group-hover:scale-110 transition-transform duration-300 shrink-0 bg-white" 
                                     referrerPolicy="no-referrer" 
                                     alt="" 
                                     onError={(e) => {
@@ -1582,49 +1908,43 @@ export default function App() {
                                     }}
                                   />
                                 ) : (
-                                  <div className="group-hover:scale-108 transition-transform duration-250 shrink-0">
+                                  <div className="w-full h-full group-hover:scale-110 transition-transform duration-300 shrink-0 flex items-center justify-center p-0">
                                     {renderOfficialLogo(item.id)}
                                   </div>
                                 )}
+                              </div>
 
-                                {/* Holographic Smartcard Golden Microchip & Dept Initials */}
-                                <div className="flex flex-col items-end gap-1 shrink-0">
-                                  <span className="text-[7.5px] font-extrabold text-slate-400 bg-slate-50 px-1 py-0.2 rounded-sm uppercase tracking-wider font-mono">
-                                    {item.badge}
+                              {/* 2. Middle area: Service Title, Description, and Badges */}
+                              <div className="flex-1 min-w-0 space-y-1 md:space-y-1.5 py-0.5">
+                                <h4 className="font-extrabold text-[12px] xs:text-[13px] sm:text-sm md:text-base text-slate-800 leading-snug tracking-tight group-hover:text-bengali-orange transition-colors duration-300 line-clamp-1">
+                                  {item.title}
+                                </h4>
+                                
+                                <p className="text-[10px] xs:text-[10.5px] sm:text-[11px] md:text-xs text-slate-500 leading-snug font-medium line-clamp-1">
+                                  {item.description ? item.description.replace(/সুবিধা:|যোগ্যতা:|পরিমাপ:|শূন্যপদ:/g, '').trim() : "ডিজিটাল পোর্টাল ও অনলাইন আবেদন প্রক্রিয়া"}
+                                </p>
+                                
+                                {/* Badge and rating row */}
+                                <div className="flex flex-wrap items-center gap-1 sm:gap-2 pt-0.5">
+                                  {/* Small status badge */}
+                                  <span className={`inline-flex items-center gap-0.5 xs:gap-1 text-[8px] xs:text-[9px] md:text-[10px] font-bold px-1.5 xs:px-2 py-0.5 rounded-full border ${style.badgeBg}`}>
+                                    <span className={`w-1 xs:w-1.5 h-1 xs:h-1.5 rounded-full ${style.badgeDot} shrink-0`} />
+                                    {badgeText}
                                   </span>
-                                  
-                                  {/* Glowing Embedded Microchip Graphic */}
-                                  <div className="w-5.5 h-4 rounded-sm bg-gradient-to-br from-amber-300 via-amber-400 to-yellow-200 border border-amber-400 p-[1.5px] flex flex-col justify-between relative overflow-hidden shrink-0 shadow-3xs">
-                                    <div className="h-[0.5px] bg-amber-700/30 w-full" />
-                                    <div className="flex justify-between">
-                                      <div className="w-[0.5px] bg-amber-700/30 h-full" />
-                                      <div className="w-1.5 h-1.5 rounded-full border border-amber-700/20 bg-amber-200/40" />
-                                      <div className="w-[0.5px] bg-amber-700/30 h-full" />
-                                    </div>
-                                    <div className="h-[0.5px] bg-amber-700/30 w-full" />
-                                  </div>
+
+                                  {/* Rating badge */}
+                                  <span className="inline-flex items-center gap-0.5 text-[8px] xs:text-[9px] md:text-[10px] font-bold text-amber-600 bg-amber-50/60 border border-amber-100 px-1.5 xs:px-2 py-0.5 rounded-full">
+                                    ★ {rating}
+                                  </span>
                                 </div>
                               </div>
 
-                              {/* Titles inside the card */}
-                              <div className="pt-1.5">
-                                <h4 className="font-extrabold text-[12px] md:text-[12.5px]/[13px] text-slate-800 leading-tight tracking-tight group-hover:text-bengali-orange transition-colors duration-200 line-clamp-2 min-h-[2.4em]">
-                                  {item.title}
-                                </h4>
-                                <p className="text-[9.5px] text-slate-400 font-mono tracking-wider leading-none mt-0.5 uppercase truncate">
-                                  {item.subtitle}
-                                </p>
+                              {/* 3. Modern arrow action button on the right */}
+                              <div className="shrink-0 flex items-center justify-center ml-0.5 xs:ml-1">
+                                <span className={`w-7 h-7 xs:w-8 xs:h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center border border-slate-200/50 shadow-xs transition-all duration-300 ${style.arrowClass} group-hover:scale-105 shrink-0`}>
+                                  <ArrowUpRight className="h-3 w-3 xs:h-3.5 xs:w-3.5 md:h-4.5 md:w-4.5 transition-transform duration-300 group-hover:rotate-45" />
+                                </span>
                               </div>
-                            </div>
-
-                            {/* Card bottom footer with compact CTA */}
-                            <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-                              <span className="text-[8.5px] font-extrabold text-slate-500 bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded-md truncate max-w-[70px]">
-                                {item.btnText}
-                              </span>
-                              <span className="text-[9px] font-black text-bengali-orange flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform duration-200">
-                                আবেদন →
-                              </span>
                             </div>
                           </div>
                         );
@@ -1900,6 +2220,39 @@ export default function App() {
                       </span>
                       <p className="text-xs text-slate-650 leading-relaxed">{step}</p>
                     </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Dynamic Service Sub-Links (Direct Portal Actions) */}
+              <div className="space-y-3.5 pt-3 border-t border-slate-100">
+                <h4 className="font-extrabold text-slate-900 border-b border-orange-50 pb-1 text-xs uppercase tracking-wider text-slate-500">গুরুত্বপূর্ণ সরাসরি লিঙ্ক ও সার্ভিস সমূহ:</h4>
+                <div className="grid grid-cols-1 gap-2">
+                  {getServiceSubLinks(selectedService.id, selectedService.officialUrl, selectedService.subLinks).map((sublink, idx) => (
+                    <a
+                      key={idx}
+                      href={sublink.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group/sublink flex items-center justify-between p-2.5 rounded-xl border border-slate-150 bg-slate-50/50 hover:bg-orange-50/40 hover:border-orange-200 active:scale-[0.99] transition-all duration-250"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="h-7 w-7 rounded-lg bg-orange-100/70 text-bengali-orange flex items-center justify-center shrink-0 group-hover/sublink:bg-bengali-orange group-hover/sublink:text-white transition-colors">
+                          <Zap className="h-3.5 w-3.5" />
+                        </div>
+                        <div className="min-w-0 text-left">
+                          <p className="text-xs font-bold text-slate-800 leading-snug group-hover/sublink:text-bengali-orange transition-colors truncate">
+                            {sublink.label}
+                          </p>
+                          <p className="text-[10px] text-slate-500 truncate mt-0.5">
+                            {sublink.desc}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="text-slate-400 group-hover/sublink:text-bengali-orange duration-200 p-1 bg-white border border-slate-150 rounded-lg shadow-3xs shrink-0">
+                        <ArrowUpRight className="h-3.5 w-3.5" />
+                      </span>
+                    </a>
                   ))}
                 </div>
               </div>
