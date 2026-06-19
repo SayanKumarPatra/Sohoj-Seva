@@ -43,7 +43,10 @@ import {
   Laptop,
   Eye,
   EyeOff,
-  Phone
+  Phone,
+  Facebook,
+  Youtube,
+  Instagram
 } from "lucide-react";
 
 import {
@@ -57,17 +60,19 @@ import {
   Scholarship,
   ServiceItem,
   AppUpdate,
-  CategoryItem
+  CategoryItem,
+  Suggestion
 } from "./data";
 
 import { collection, onSnapshot, doc, setDoc, deleteDoc } from "firebase/firestore";
 import { ref as rtdbRef, onValue as onRtdbValue, set as rtdbSet } from "firebase/database";
 import { db, rtdb, isPlaceholderFirebase } from "./lib/firebase";
 
-import AiAssistant from "./components/AiAssistant";
 import AdminPanel from "./components/AdminPanel";
 // @ts-ignore
 import kolkataHeroBanner from "./assets/images/kolkata_hero_banner_1781608902642.jpg";
+// @ts-ignore
+import userLogo from "./assets/images/user_logo.svg";
 
 const renderOfficialLogo = (id: string) => {
   switch (id) {
@@ -406,102 +411,111 @@ const getCategoryColorAccent = (cat: string) => {
   switch (cat) {
     case "jobs":
       return {
-        gradient: "from-white/95 via-white/95 to-blue-50/20",
-        glow: "hover:shadow-blue-500/10 hover:shadow-2xl",
-        iconBg: "bg-gradient-to-br from-blue-50 to-indigo-50/60",
-        iconBorder: "border-blue-100",
-        badgeBg: "bg-blue-50 text-blue-700 border-blue-100",
-        badgeDot: "bg-blue-500",
-        borderAccent: "hover:border-blue-300",
-        arrowClass: "bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white"
+        gradient: "from-white/95 via-white/98 to-blue-50/30 hover:to-blue-100/45",
+        glow: "hover:shadow-[0_20px_35px_-12px_rgba(59,130,246,0.18)]",
+        iconBg: "bg-blue-500/10 text-[#2563EB]",
+        iconBorder: "border-blue-200/50",
+        badgeBg: "bg-blue-50/80 text-blue-850 border-blue-150/40",
+        badgeDot: "bg-[#2563EB]",
+        borderAccent: "hover:border-blue-300 hover:ring-4 hover:ring-blue-100/40",
+        arrowClass: "bg-blue-50 text-[#2563EB] group-hover:bg-[#2563EB] group-hover:text-white",
+        orbGradient: "from-blue-500/10 to-indigo-500/10"
       };
     case "scholarships":
       return {
-        gradient: "from-white/95 via-white/95 to-emerald-50/20",
-        glow: "hover:shadow-emerald-500/10 hover:shadow-2xl",
-        iconBg: "bg-gradient-to-br from-emerald-50 to-teal-50/60",
-        iconBorder: "border-emerald-100",
-        badgeBg: "bg-emerald-50 text-emerald-700 border-emerald-100",
-        badgeDot: "bg-emerald-500",
-        borderAccent: "hover:border-emerald-300",
-        arrowClass: "bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white"
+        gradient: "from-white/95 via-white/98 to-emerald-50/30 hover:to-emerald-100/45",
+        glow: "hover:shadow-[0_20px_35px_-12px_rgba(16,185,129,0.18)]",
+        iconBg: "bg-emerald-500/10 text-[#059669]",
+        iconBorder: "border-emerald-200/50",
+        badgeBg: "bg-emerald-50/80 text-emerald-850 border-emerald-150/40",
+        badgeDot: "bg-[#059669]",
+        borderAccent: "hover:border-emerald-300 hover:ring-4 hover:ring-emerald-100/40",
+        arrowClass: "bg-emerald-50 text-[#059669] group-hover:bg-[#059669] group-hover:text-white",
+        orbGradient: "from-emerald-500/10 to-teal-500/10"
       };
     case "welfare":
       return {
-        gradient: "from-white/95 via-white/95 to-orange-50/20",
-        glow: "hover:shadow-orange-500/10 hover:shadow-2xl",
-        iconBg: "bg-gradient-to-br from-orange-50 to-amber-50/60",
-        iconBorder: "border-orange-100",
-        badgeBg: "bg-orange-50 text-orange-700 border-orange-100/60",
-        badgeDot: "bg-orange-500",
-        borderAccent: "hover:border-orange-300",
-        arrowClass: "bg-orange-50 text-orange-600 group-hover:bg-orange-600 group-hover:text-white"
+        gradient: "from-white/95 via-white/98 to-orange-50/30 hover:to-orange-100/45",
+        glow: "hover:shadow-[0_20px_35px_-12px_rgba(249,115,22,0.18)]",
+        iconBg: "bg-orange-500/10 text-[#EA580C]",
+        iconBorder: "border-orange-200/50",
+        badgeBg: "bg-orange-50/80 text-orange-850 border-orange-150/40",
+        badgeDot: "bg-[#EA580C]",
+        borderAccent: "hover:border-orange-300 hover:ring-4 hover:ring-orange-100/40",
+        arrowClass: "bg-orange-50 text-[#EA580C] group-hover:bg-[#EA580C] group-hover:text-white",
+        orbGradient: "from-orange-500/10 to-amber-500/10"
       };
     case "identity":
       return {
-        gradient: "from-white/95 via-white/95 to-violet-50/20",
-        glow: "hover:shadow-violet-500/10 hover:shadow-2xl",
-        iconBg: "bg-gradient-to-br from-violet-50 to-fuchsia-50/60",
-        iconBorder: "border-violet-100",
-        badgeBg: "bg-violet-50 text-violet-700 border-violet-100",
-        badgeDot: "bg-violet-500",
-        borderAccent: "hover:border-violet-300",
-        arrowClass: "bg-violet-50 text-violet-600 group-hover:bg-violet-600 group-hover:text-white"
+        gradient: "from-white/95 via-white/98 to-violet-50/30 hover:to-violet-100/45",
+        glow: "hover:shadow-[0_20px_35px_-12px_rgba(139,92,246,0.18)]",
+        iconBg: "bg-violet-500/10 text-[#7C3AED]",
+        iconBorder: "border-violet-200/50",
+        badgeBg: "bg-violet-50/80 text-violet-850 border-violet-150/40",
+        badgeDot: "bg-[#7C3AED]",
+        borderAccent: "hover:border-violet-300 hover:ring-4 hover:ring-violet-100/40",
+        arrowClass: "bg-violet-50 text-[#7C3AED] group-hover:bg-[#7C3AED] group-hover:text-white",
+        orbGradient: "from-violet-500/10 to-fuchsia-500/10"
       };
     case "utility":
       return {
-        gradient: "from-white/95 via-white/95 to-teal-50/20",
-        glow: "hover:shadow-teal-500/10 hover:shadow-2xl",
-        iconBg: "bg-gradient-to-br from-teal-50 to-cyan-50/60",
-        iconBorder: "border-teal-100",
-        badgeBg: "bg-teal-50 text-teal-700 border-teal-100",
-        badgeDot: "bg-teal-500",
-        borderAccent: "hover:border-teal-300",
-        arrowClass: "bg-teal-50 text-teal-600 group-hover:bg-teal-600 group-hover:text-white"
+        gradient: "from-white/95 via-white/98 to-teal-50/30 hover:to-teal-100/45",
+        glow: "hover:shadow-[0_20px_35px_-12px_rgba(13,148,136,0.18)]",
+        iconBg: "bg-teal-500/10 text-[#0D9488]",
+        iconBorder: "border-teal-200/50",
+        badgeBg: "bg-teal-50/80 text-teal-850 border-teal-150/40",
+        badgeDot: "bg-[#0D9488]",
+        borderAccent: "hover:border-teal-300 hover:ring-4 hover:ring-teal-100/40",
+        arrowClass: "bg-teal-50 text-[#0D9488] group-hover:bg-[#0D9488] group-hover:text-white",
+        orbGradient: "from-teal-500/10 to-cyan-500/10"
       };
     case "health":
       return {
-        gradient: "from-white/95 via-white/95 to-rose-50/20",
-        glow: "hover:shadow-rose-500/10 hover:shadow-2xl",
-        iconBg: "bg-gradient-to-br from-rose-50 to-pink-50/60",
-        iconBorder: "border-rose-100",
-        badgeBg: "bg-rose-50 text-rose-700 border-rose-100",
-        badgeDot: "bg-rose-500",
-        borderAccent: "hover:border-rose-300",
-        arrowClass: "bg-rose-50 text-rose-600 group-hover:bg-rose-600 group-hover:text-white"
+        gradient: "from-white/95 via-white/98 to-rose-50/30 hover:to-rose-100/45",
+        glow: "hover:shadow-[0_20px_35px_-12px_rgba(225,29,72,0.18)]",
+        iconBg: "bg-rose-500/10 text-[#E11D48]",
+        iconBorder: "border-rose-200/50",
+        badgeBg: "bg-rose-50/80 text-rose-850 border-rose-150/40",
+        badgeDot: "bg-[#E11D48]",
+        borderAccent: "hover:border-rose-300 hover:ring-4 hover:ring-rose-100/40",
+        arrowClass: "bg-rose-50 text-[#E11D48] group-hover:bg-[#E11D48] group-hover:text-white",
+        orbGradient: "from-rose-500/10 to-pink-500/10"
       };
     case "land":
       return {
-        gradient: "from-white/95 via-white/95 to-amber-50/20",
-        glow: "hover:shadow-amber-500/10 hover:shadow-2xl",
-        iconBg: "bg-gradient-to-br from-amber-50 to-yellow-50/60",
-        iconBorder: "border-amber-100",
-        badgeBg: "bg-amber-50 text-amber-805 border-amber-100/60",
-        badgeDot: "bg-amber-600",
-        borderAccent: "hover:border-amber-300",
-        arrowClass: "bg-amber-50 text-amber-700 group-hover:bg-amber-600 group-hover:text-white"
+        gradient: "from-white/95 via-white/98 to-amber-50/30 hover:to-amber-100/45",
+        glow: "hover:shadow-[0_20px_35px_-12px_rgba(217,119,6,0.18)]",
+        iconBg: "bg-amber-500/10 text-[#D97706]",
+        iconBorder: "border-amber-200/50",
+        badgeBg: "bg-amber-50/80 text-amber-850 border-amber-150/40",
+        badgeDot: "bg-[#D97706]",
+        borderAccent: "hover:border-amber-300 hover:ring-4 hover:ring-amber-100/40",
+        arrowClass: "bg-amber-50 text-[#D97706] group-hover:bg-[#D97706] group-hover:text-white",
+        orbGradient: "from-amber-500/10 to-yellow-500/10"
       };
     case "cyber_cafe":
       return {
-        gradient: "from-white/95 via-white/95 to-amber-50/25",
-        glow: "hover:shadow-orange-500/10 hover:shadow-2xl",
-        iconBg: "bg-gradient-to-br from-orange-50 to-amber-100/65",
-        iconBorder: "border-orange-100",
-        badgeBg: "bg-orange-50 text-orange-700 border-orange-100",
-        badgeDot: "bg-orange-500",
-        borderAccent: "hover:border-orange-300",
-        arrowClass: "bg-orange-50 text-orange-600 group-hover:bg-orange-600 group-hover:text-white"
+        gradient: "from-white/95 via-white/98 to-orange-50/30 hover:to-orange-100/45",
+        glow: "hover:shadow-[0_20px_35px_-12px_rgba(234,88,12,0.18)]",
+        iconBg: "bg-orange-500/10 text-[#EA580C]",
+        iconBorder: "border-orange-200/50",
+        badgeBg: "bg-orange-50/80 text-orange-850 border-orange-150/40",
+        badgeDot: "bg-[#EA580C]",
+        borderAccent: "hover:border-orange-300 hover:ring-4 hover:ring-orange-100/40",
+        arrowClass: "bg-orange-50 text-[#EA580C] group-hover:bg-[#EA580C] group-hover:text-white",
+        orbGradient: "from-orange-500/10 to-amber-500/10"
       };
     default:
       return {
-        gradient: "from-white/95 via-white/95 to-slate-50/40",
-        glow: "hover:shadow-slate-500/5 hover:shadow-2xl",
-        iconBg: "bg-gradient-to-br from-slate-50 to-zinc-50/60",
-        iconBorder: "border-slate-200/60",
-        badgeBg: "bg-slate-100 text-slate-700 border-slate-200/60",
-        badgeDot: "bg-slate-400",
-        borderAccent: "hover:border-slate-300",
-        arrowClass: "bg-slate-50 text-slate-600 group-hover:bg-slate-600 group-hover:text-white"
+        gradient: "from-white/95 via-white/98 to-slate-50/30 hover:to-slate-100/40",
+        glow: "hover:shadow-[0_20px_35px_-12px_rgba(71,85,105,0.12)]",
+        iconBg: "bg-slate-500/10 text-[#475569]",
+        iconBorder: "border-slate-200/50",
+        badgeBg: "bg-slate-100 text-slate-800 border-slate-200/60",
+        badgeDot: "bg-[#475569]",
+        borderAccent: "hover:border-slate-300 hover:ring-4 hover:ring-slate-100/40",
+        arrowClass: "bg-slate-50 text-[#475569] group-hover:bg-[#475569] group-hover:text-white",
+        orbGradient: "from-slate-500/10 to-zinc-500/10"
       };
   }
 };
@@ -690,7 +704,126 @@ const getServiceSubLinks = (id: string, officialUrl: string, customSubLinks?: { 
   }
 };
 
+const expandQuery = (q: string): string[] => {
+  const words = q.toLowerCase().split(/\s+/).filter(Boolean);
+  const expansions: string[] = [];
+  
+  const dict: { [key: string]: string[] } = {
+    // Scheme categories and titles
+    "lakshmir": ["লক্ষ্মী", "লক্ষ্মীর", "ভাণ্ডার", "lakshmir", "bhandar"],
+    "bhandar": ["লক্ষ্মী", "লক্ষ্মীর", "ভাণ্ডার", "lakshmir", "bhandar"],
+    "krishak": ["কৃষক", "বন্ধু", "krishak", "bandhu", "farmer"],
+    "bandhu": ["কৃষক", "বন্ধু", "krishak", "bandhu"],
+    "farmer": ["কৃষক", "বন্ধু", "krishak", "bandhu", "চাষ", "চাষী", "মাঠ"],
+    "farmers": ["কৃষক", "বন্ধু", "krishak", "bandhu", "চাষ", "চাষী", "মাঠ"],
+    "agriculture": ["কৃষক", "চাষ", "চাষী"],
+    "women": ["মহিলা", "নারী", "মেয়ে", "কন্যা", "লক্ষ্মী", "রূপশ্রী", "কন্যাশ্রী", "women"],
+    "woman": ["মহিলা", "নারী", "মেয়ে", "কন্যা", "লক্ষ্মী", "রূপশ্রী", "কন্যাশ্রী"],
+    "girl": ["মেয়ে", "কন্যা", "রূপশ্রী", "কন্যাশ্রী"],
+    "girls": ["মেয়ে", "কন্যা", "রূপশ্রী", "কন্যাশ্রী"],
+    "widow": ["বিধবা"],
+    "student": ["ছাত্র", "শিক্ষার্থী", "ক্রেডিট", "কার্ড", "স্কলারশিপ", "student", "credit"],
+    "students": ["ছাত্র", "শিক্ষার্থী", "ক্রেডিট", "কার্ড", "স্কলারশিপ", "student", "credit"],
+    "scholarship": ["স্কলারশিপ", "শিক্ষাবৃত্তি", "টাকা", "ঐক্যশ্রী", "oasis", "svmcm", "বিবেকানন্দ", "নবান্ন", "scholarship"],
+    "scholarships": ["স্কলারশিপ", "শিক্ষাবৃত্তি", "টাকা", "ঐক্যশ্রী", "oasis", "svmcm", "বিবেকানন্দ", "নবান্ন", "scholarship"],
+    "school": ["স্কুল", "শিক্ষা", "শিক্ষক", "ssc", "school"],
+    "college": ["কলেজ", "উচ্চশিক্ষা", "student", "credit"],
+    "education": ["শিক্ষা", "ছাত্র", "শিক্ষার্থী"],
+    "credit": ["ক্রেডিট", "কার্ড", "ঋণ", "credit", "card"],
+    "card": ["কার্ড", "আধার", "ভোটার", "রেশন", "প্যান", "স্বাস্থ্য", "সাথী", "card"],
+    "cards": ["কার্ড", "আধার", "ভোটার", "রেশন", "প্যান", "স্বাস্থ্য", "সাথী", "card"],
+    "senior": ["প্রবীণ", "বার্ধক্য", "বয়স্ক", "ভাতা", "পেনশন", "senior", "pension"],
+    "old": ["প্রবীণ", "বার্ধক্য", "বয়স্ক", "ভাতা", "পেনশন", "old"],
+    "pension": ["ভাতা", "পেনশন", "পেনশান", "pension"],
+    "worker": ["শ্রমিক", "দিনমজুরি", "দিনমজুর", "bmssy", "সামাজিক", "সুরক্ষা", "worker"],
+    "workers": ["শ্রমিক", "দিনমজুরি", "দিনমজুর", "bmssy", "সামাজিক", "সুরক্ষা", "worker"],
+    "labour": ["শ্রমিক", "দিনমজুর", "bmssy", "labour"],
+    "labor": ["শ্রমিক", "দিনমজুর", "bmssy", "labor"],
+    "work": ["শ্রমিক", "কাজ", "কর্মচারী"],
+    "job": ["চাকরি", "নিয়োগ", "কর্মসংস্থান", "ফলাফল", "পুলিশ", "কনস্টেবল", "ক্লার্ক", "psc", "tet", "ssc", "job"],
+    "jobs": ["চাকরি", "নিয়োগ", "কর্মসংস্থান", "ফলাফল", "পুলিশ", "কনস্টেবল", "ক্লার্ক", "psc", "tet", "ssc", "job"],
+    "recruitment": ["নিয়োগ", "বিজ্ঞপ্তি", "চাকরি", "recruit"],
+    "recruit": ["নিয়োগ", "বিজ্ঞপ্তি", "চাকরি", "recruit"],
+    "vacancy": ["শূন্যপদ", "আসন", "পদ"],
+    "exam": ["পরীক্ষা", "ফল", "রেজাল্ট"],
+    "result": ["ফলাফল", "রেজাল্ট", "ফল"],
+
+    // Documents & Services
+    "aadhaar": ["আধার", "কার্ড", "aadhaar", "uidai"],
+    "aadhar": ["আধার", "কার্ড", "aadhaar", "uidai"],
+    "pan": ["প্যান", "pan", "ট্যাক্স"],
+    "voter": ["ভোটার", "ভোট", "voter", "epic"],
+    "ration": ["রেশন", "খাদ্য", "রেশনকার্ড", "ration"],
+    "passport": ["পাসপোর্ট", "passport", "বিদেশ"],
+    "driving": ["ড্রাইভিং", "লাইসেন্স", "গাড়ি", "driving", "license", "sarathi"],
+    "license": ["লাইসেন্স", "ড্রাইভিং", "license"],
+    "birth": ["জন্ম", "শংসাপত্র", "birth", "certificate"],
+    "death": ["মৃত্যু", "শংসাপত্র", "death", "certificate"],
+    "caste": ["জাতিগত", "শংসাপত্র", "কাস্ট", "caste", "certificate", "sc", "st", "obc"],
+    "castecert": ["কাস্ট", "সার্টিফিকেট"],
+    "income": ["আয়", "শংসাপত্র", "ইনকাম", "income", "certificate", "BDO"],
+    "obc": ["obc", "তপশিলি", "অনগ্রসর"],
+    "sc": ["sc", "তপশিলি"],
+    "st": ["st", "তপশিলি", "উপজাতি"],
+    "certificates": ["শংসাপত্র", "সার্টিফিকেট", "certificate"],
+    "certificate": ["শংসাপত্র", "সার্টিফিকেট", "certificate"],
+    
+    // Departments & organizations
+    "swasthya": ["স্বাস্থ্য", "সাথী", "চিকিৎসা", "হাসপাতাল", "বিমা", "swasthya", "sathi"],
+    "sathi": ["সাথী", "swasthya", "sathi"],
+    "health": ["স্বাস্থ্য", "সাথী", "নার্স", "ডাক্তার", "ডিজিটাল", "health"],
+    "police": ["পুলিশ", "কনস্টেবল", "থানা", "police", "constable", "wbp"],
+    "constable": ["কনস্টেবল", "constable"],
+    "clerk": ["ক্লার্ক", "ক্লার্কশিপ", "clerk", "psc"],
+    "clerkship": ["ক্লার্কশিপ", "clerkship", "psc"],
+    "psc": ["psc", "wbpsc", "পাবলিক", "সার্ভিস", "কমিশন"],
+    "wbpsc": ["wbpsc", "psc", "ক্লার্ক"],
+    "ssc": ["ssc", "school", "service", "স্কুল", "সার্ভিস"],
+    "tet": ["tet", "টেট", "প্রাথমিক", "শিক্ষক", "primary"],
+    "municipal": ["মিউনিসিপ্যাল", "পৌরসভা", "municipal"],
+    "corporation": ["কর্পোরেশন", "পৌরসভা", "corporation"],
+    "primary": ["প্রাথমিক", "টেট", "primary"],
+    "teacher": ["শিক্ষকত", "শিক্ষক", "শিক্ষিকা", "teacher"],
+    "nursing": ["নার্স", "নার্সিং", "nurse", "health"],
+    "nurse": ["নার্স", "নার্সিং", "nurse", "health"],
+
+    // Scholarships specific
+    "oasis": ["oasis", "ওএসিস", "কাস্ট"],
+    "aikyashree": ["ঐক্যশ্রী", "aikyashree", "সংখ্যালঘু"],
+    "minority": ["ঐক্যশ্রী", "সংখ্যালঘু", "minorities"],
+    "minorities": ["ঐক্যশ্রী", "সংখ্যালঘু", "minorities"],
+    "vivekananda": ["বিবেকানন্দ", "স্বামী", "svmcm", "vivekananda"],
+    "svmcm": ["svmcm", "বিবেকানন্দ", "স্বামী"],
+    "nabanna": ["নবান্ন", "ত্রাণ", "তহবিল", "nabanna"]
+  };
+
+  words.forEach(word => {
+    expansions.push(word);
+    if (dict[word]) {
+      expansions.push(...dict[word]);
+    }
+    for (const key in dict) {
+      if (word.startsWith(key) || key.startsWith(word)) {
+        if (word.length >= 3 && key.length >= 3) {
+          expansions.push(...dict[key]);
+        }
+      }
+    }
+  });
+
+  return Array.from(new Set(expansions));
+};
+
 export default function App() {
+  const [isScrolled, setIsScrolled] = useState(false);
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   // Global States (shared state for instant reactions)
   const [schemes, setSchemes] = useState<Scheme[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -698,6 +831,7 @@ export default function App() {
   const [scholarships, setScholarships] = useState<Scholarship[]>([]);
   const [services, setServices] = useState<ServiceItem[]>([]);
   const [categories, setCategories] = useState<CategoryItem[]>([]);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [firebaseStatus, setFirebaseStatus] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [docCategory, setDocCategory] = useState<string>("all");
@@ -820,11 +954,25 @@ export default function App() {
   }, [schemes, jobs, scholarships, services]);
 
   const displayedItems = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return allDashboardItems.filter((item) => {
+        return docCategory === "all" || item.cat === docCategory || item.category === docCategory;
+      });
+    }
+
+    const expandedTerms = expandQuery(searchQuery);
+
     return allDashboardItems.filter((item) => {
-      const matchesSearch =
-        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (item.subtitle && item.subtitle.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        (item.description && item.description.toLowerCase().includes(searchQuery.toLowerCase()));
+      const matchesSearch = expandedTerms.some((term) => {
+        const lowerTerm = term.toLowerCase();
+        return (
+          item.title.toLowerCase().includes(lowerTerm) ||
+          (item.subtitle && item.subtitle.toLowerCase().includes(lowerTerm)) ||
+          (item.description && item.description.toLowerCase().includes(lowerTerm)) ||
+          (item.badge && item.badge.toLowerCase().includes(lowerTerm)) ||
+          (item.categoryName && item.categoryName.toLowerCase().includes(lowerTerm))
+        );
+      });
 
       const matchesCategory =
         docCategory === "all" ||
@@ -842,6 +990,7 @@ export default function App() {
     let unsubScholarships = () => {};
     let unsubServices = () => {};
     let unsubCategories = () => {};
+    let unsubSuggestions = () => {};
 
     if (!isPlaceholderFirebase) {
       try {
@@ -1005,6 +1154,18 @@ export default function App() {
           }, (err) => {
             console.warn("Client-side categories onSnapshot listener skipped:", err);
           });
+
+          unsubSuggestions = onSnapshot(collection(db, "suggestions"), (snapshot) => {
+            const list: Suggestion[] = [];
+            snapshot.forEach((doc) => {
+              list.push(doc.data() as Suggestion);
+            });
+            if (list.length > 0) {
+              setSuggestions(list);
+            }
+          }, (err) => {
+            console.warn("Client-side suggestions onSnapshot listener skipped:", err);
+          });
         }
       } catch (err) {
         console.warn("Failed to attach client-side real-time listeners:", err);
@@ -1047,6 +1208,11 @@ export default function App() {
         if (Array.isArray(categoriesR) && categoriesR.length > 0) {
           setCategories((prev) => prev.length === 0 ? categoriesR : prev);
         }
+
+        const suggestionsR = await fetch("/api/suggestions").then(r => r.json()).catch(() => []);
+        if (Array.isArray(suggestionsR) && suggestionsR.length > 0) {
+          setSuggestions((prev) => prev.length === 0 ? suggestionsR : prev);
+        }
       } catch (err) {
         console.error("Failed to load initial settings / fallback data:", err);
       }
@@ -1060,6 +1226,7 @@ export default function App() {
       unsubScholarships();
       unsubServices();
       unsubCategories();
+      unsubSuggestions();
     };
   }, []);
 
@@ -1263,6 +1430,7 @@ export default function App() {
       console.error("Error creating service:", err);
     }
   };
+
   const handleSaveService = async (service: ServiceItem) => {
     try {
       if (!isPlaceholderFirebase) {
@@ -1283,6 +1451,7 @@ export default function App() {
       console.error("Error saving service:", err);
     }
   };
+
   const handleDeleteService = async (id: string) => {
     try {
       if (!isPlaceholderFirebase) {
@@ -1299,30 +1468,26 @@ export default function App() {
     }
   };
 
-  const handleSaveCategory = async (cat: CategoryItem) => {
+  const handleSaveCategory = async (category: CategoryItem) => {
     try {
       if (!isPlaceholderFirebase) {
         if (rtdb) {
-          await rtdbSet(rtdbRef(rtdb, `categories/${cat.id}`), cat);
+          await rtdbSet(rtdbRef(rtdb, `categories/${category.id}`), category);
         } else if (db) {
-          await setDoc(doc(db, "categories", cat.id), cat);
+          await setDoc(doc(db, "categories", category.id), category);
         }
       }
       await fetch("/api/categories", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(cat)
+        body: JSON.stringify(category)
       }).catch((e) => console.warn("API fallback ignored (expected on Vercel):", e));
       
       setCategories((prev) => {
-        const idx = prev.findIndex((c) => c.id === cat.id);
-        if (idx !== -1) {
-          const copy = [...prev];
-          copy[idx] = cat;
-          return copy;
-        } else {
-          return [cat, ...prev];
+        if (prev.some((c) => c.id === category.id)) {
+          return prev.map((c) => c.id === category.id ? category : c);
         }
+        return [...prev, category];
       });
     } catch (err) {
       console.error("Error saving category:", err);
@@ -1345,22 +1510,71 @@ export default function App() {
     }
   };
 
-  const handleSaveSettings = async (newSettings: { geminiApiKey: string }) => {
+  const handleSaveSettings = async (newSettings: { geminiApiKey: string }): Promise<boolean> => {
     try {
-      const res = await fetch("/api/settings", {
+      if (!isPlaceholderFirebase) {
+        if (rtdb) {
+          await rtdbSet(rtdbRef(rtdb, "settings"), newSettings);
+        } else if (db) {
+          await setDoc(doc(db, "settings", "config"), newSettings);
+        }
+      }
+      await fetch("/api/settings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newSettings),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setSettings(newSettings);
-        return true;
-      }
+        body: JSON.stringify(newSettings)
+      }).catch((e) => console.warn("API settings save fallback ignored:", e));
+
+      setSettings(newSettings);
+      triggerPushBroadcast("সিস্টেম সেটিংস সফলভাবে সেভ করা হয়েছে!");
+      return true;
     } catch (err) {
       console.error("Error saving settings:", err);
+      return false;
     }
-    return false;
+  };
+
+  const handleSaveSuggestion = async (suggestion: Suggestion) => {
+    try {
+      if (!isPlaceholderFirebase) {
+        if (rtdb) {
+          await rtdbSet(rtdbRef(rtdb, `suggestions/${suggestion.id}`), suggestion);
+        } else if (db) {
+          await setDoc(doc(db, "suggestions", suggestion.id), suggestion);
+        }
+      }
+      await fetch("/api/suggestions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(suggestion)
+      }).catch((e) => console.warn("API suggestions save fallback ignored:", e));
+
+      setSuggestions((prev) => {
+        if (prev.some((s) => s.id === suggestion.id)) {
+          return prev.map((s) => s.id === suggestion.id ? suggestion : s);
+        }
+        return [suggestion, ...prev];
+      });
+    } catch (err) {
+      console.error("Error saving suggestion:", err);
+    }
+  };
+
+  const handleDeleteSuggestion = async (id: string) => {
+    try {
+      setSuggestions((prev) => prev.filter((s) => s.id !== id));
+      await fetch(`/api/suggestions/${id}`, { method: "DELETE" }).catch((e) => console.warn("API suggestions delete fallback ignored:", e));
+
+      if (!isPlaceholderFirebase) {
+        if (rtdb) {
+          await rtdbSet(rtdbRef(rtdb, `suggestions/${id}`), null);
+        } else if (db) {
+          await deleteDoc(doc(db, "suggestions", id));
+        }
+      }
+    } catch (err) {
+      console.error("Error deleting suggestion:", err);
+    }
   };
 
   // Filter and Search States
@@ -1401,14 +1615,66 @@ export default function App() {
 
   // Simulation Alert/Push Notifications State
   const [broadcastNotices, setBroadcastNotices] = useState<string[]>([
-    "স্বাগতম! বাংলার সেবা নাগরিক সেবা পোর্টালে পশ্চিমবঙ্গ রাজ্য সরকারের সমস্ত সামাজিক প্রকল্প, নিয়োগ এবং বৃত্তি সংক্রান্ত নির্ভরযোগ্য তথ্য বাংলায় পাবেন।"
+    "স্বাগতম! সহজ সেবা পোর্টালের মাধ্যমে পশ্চিমবঙ্গ রাজ্য সরকারের সমস্ত সামাজিক প্রকল্প, নিয়োগ এবং বৃত্তি সংক্রান্ত নির্ভরযোগ্য তথ্য সহজেই বাংলায় পাবেন।"
   ]);
+
+  // Suggestion states
+  const [suggestionName, setSuggestionName] = useState("");
+  const [suggestionMobile, setSuggestionMobile] = useState("");
+  const [suggestionType, setSuggestionType] = useState("difficulty");
+  const [suggestionText, setSuggestionText] = useState("");
+  const [suggestionSubmitting, setSuggestionSubmitting] = useState(false);
+  const [suggestionSubmitted, setSuggestionSubmitted] = useState(false);
+
+  const submitSuggestionForm = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!suggestionText.trim()) return;
+
+    setSuggestionSubmitting(true);
+    try {
+      const newSuggestion: Suggestion = {
+        id: "sug_" + Date.now(),
+        name: suggestionName.trim() || undefined,
+        mobile: suggestionMobile.trim() || undefined,
+        type: suggestionType,
+        text: suggestionText.trim(),
+        created_at: new Date().toISOString(),
+        status: "pending",
+        adminNotes: ""
+      };
+
+      await handleSaveSuggestion(newSuggestion);
+      setSuggestionSubmitted(true);
+      
+      // Clear form
+      setSuggestionName("");
+      setSuggestionMobile("");
+      setSuggestionType("difficulty");
+      setSuggestionText("");
+      
+      triggerPushBroadcast("আপনার মতামত সাফল্যের সাথে পাঠানো হয়েছে! অ্যাডমিনরা এটি শীঘ্রই পর্যালোচনা করবেন।");
+    } catch (err) {
+      console.error("Error submitting suggestion:", err);
+    } finally {
+      setSuggestionSubmitting(false);
+    }
+  };
 
   // Subscription Alerts (WhatsApp & Telegram signup)
   const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
   const [subType, setSubType] = useState<"WhatsApp" | "Telegram" | null>(null);
   const [mobileNumber, setMobileNumber] = useState("");
   const [subSuccess, setSubTypeSuccess] = useState(false);
+
+  const handleSubscribeSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (mobileNumber.length === 10) {
+      setSubTypeSuccess(true);
+      triggerPushBroadcast(`নতুন সাবস্ক্রিপশন রেজিস্টার্ড: ${subType} এর মাধ্যমে ${mobileNumber.slice(0, 3)}******* নম্বরে সরকারি আপডেট পাঠানো হবে।`);
+    } else {
+      triggerPushBroadcast("অনুগ্রহ করে একটি সঠিক ১০ সংখ্যার মোবাইল নম্বর লিখুন।");
+    }
+  };
 
   // Additional user interface states (satisfying design constraints)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -1441,11 +1707,26 @@ export default function App() {
 
   // Search logic covering titles, categories, subtitles, descriptions, etc.
   const filteredSchemes = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return schemes.filter((scheme) => {
+        return activeSchemeTab === "all" || scheme.category === activeSchemeTab;
+      });
+    }
+
+    const expandedTerms = expandQuery(searchQuery);
+
     return schemes.filter((scheme) => {
-      const matchesSearch =
-        scheme.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        scheme.benefits.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        scheme.eligibility.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch = expandedTerms.some((term) => {
+        const lowerTerm = term.toLowerCase();
+        return (
+          scheme.title.toLowerCase().includes(lowerTerm) ||
+          (scheme.titleEn && scheme.titleEn.toLowerCase().includes(lowerTerm)) ||
+          scheme.benefits.toLowerCase().includes(lowerTerm) ||
+          scheme.eligibility.toLowerCase().includes(lowerTerm) ||
+          scheme.category.toLowerCase().includes(lowerTerm) ||
+          (scheme.categoryName && scheme.categoryName.toLowerCase().includes(lowerTerm))
+        );
+      });
 
       const matchesTab = activeSchemeTab === "all" || scheme.category === activeSchemeTab;
       return matchesSearch && matchesTab;
@@ -1453,11 +1734,25 @@ export default function App() {
   }, [schemes, searchQuery, activeSchemeTab]);
 
   const filteredJobs = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return jobs.filter((job) => {
+        return activeJobTab === "all" || job.category === activeJobTab;
+      });
+    }
+
+    const expandedTerms = expandQuery(searchQuery);
+
     return jobs.filter((job) => {
-      const matchesSearch =
-        job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        job.subtitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        job.qualification.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch = expandedTerms.some((term) => {
+        const lowerTerm = term.toLowerCase();
+        return (
+          job.title.toLowerCase().includes(lowerTerm) ||
+          (job.subtitle && job.subtitle.toLowerCase().includes(lowerTerm)) ||
+          job.qualification.toLowerCase().includes(lowerTerm) ||
+          job.category.toLowerCase().includes(lowerTerm) ||
+          (job.categoryName && job.categoryName.toLowerCase().includes(lowerTerm))
+        );
+      });
 
       const matchesTab = activeJobTab === "all" || job.category === activeJobTab;
       return matchesSearch && matchesTab;
@@ -1468,237 +1763,140 @@ export default function App() {
     setBroadcastNotices((prev) => [text, ...prev]);
   };
 
-  const handleSubscribeSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!mobileNumber) return;
-    setSubTypeSuccess(true);
-    setTimeout(() => {
-      setShowSubscriptionModal(false);
-      setMobileNumber("");
-      setSubTypeSuccess(false);
-    }, 2500);
-  };
-
   return (
-    <div className="relative min-h-screen flex flex-col bg-[#F9FBFC] text-slate-800 transition-all duration-300 text-sm">
+    <div className="relative min-h-screen flex flex-col bg-[#F8FAFC] text-[#0F172A] transition-all duration-300 text-sm">
       
-      {/* 1. TOP BROADCAST ALERT BAND (Persistent Info) */}
-      <div className="bg-gradient-to-r from-[#A94F12] to-[#E96A1F] text-white py-2 px-4 shadow-inner text-center text-xs md:text-sm font-semibold flex flex-col sm:flex-row items-center justify-center gap-2 relative z-50">
-        <span className="bg-amber-400 text-slate-900 text-[10px] font-extrabold px-2 py-0.5 rounded-md uppercase leading-none shrink-0 tracking-wider animate-pulse">আজকের বিজ্ঞপ্তি</span>
-        <p className="whitespace-normal break-words leading-relaxed text-slate-50">পশ্চিমবঙ্গ নতুন জনকল্যাণ প্রকল্প, নিয়োগ বিজ্ঞপ্তি ও স্কলারশিপের সর্বশেষ নির্ভরযোগ্য তথ্য জানতে এআই চ্যাট ব্যবহার করুন।</p>
-      </div>
-
-      {/* 2. TOP METADATA & ACCESSIBILITY WIDGETS BAR */}
-      <div className="bg-slate-50 border-b border-slate-200/50 px-4 md:px-8 py-1 text-slate-600 text-xs flex flex-wrap items-center justify-between gap-2.5 select-none">
-        <div className="flex flex-wrap items-center gap-4">
-          <span className="text-[10px] bg-slate-200 text-slate-700 font-bold px-1.5 py-0.5 rounded">বেসরকারি নাগরিক পোর্টাল</span>
-          <div className="hidden sm:flex items-center gap-1.5 text-slate-550">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span>সার্ভার স্ট্যাটাস: <strong className="text-slate-700">সক্রিয়</strong></span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          {/* Official Login (Admin switch with password) */}
-          <button
-            id="admin-btn"
-            onClick={() => {
-              if (isAdminOpen) {
+      {/* GLOBAL TOP NAVIGATION BAR */}
+      <nav className="bg-white border-b border-slate-200 sticky top-0 z-40 w-full shadow-[0_1px_3px_rgba(0,0,0,0.02)] select-none">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16 items-center">
+            {/* Logo and Brand */}
+            <div 
+              onClick={() => {
                 setIsAdminOpen(false);
-                triggerPushBroadcast("অফিসিয়াল সেশন সমাপ্ত করা হয়েছে।");
-              } else {
-                setAdminPasswordInput("");
-                setAdminPasswordError("");
-                setShowAdminPasswordModal(true);
-              }
-            }}
-            className={`flex items-center gap-1.5 px-3 py-1 rounded-md border text-[11px] font-semibold transition-all cursor-pointer ${
-              isAdminOpen
-                ? "bg-slate-900 border-slate-900 text-white shadow-xs scale-[1.01]"
-                : "bg-white border-slate-300 text-slate-700 hover:bg-[#E96A1F]/5"
-            }`}
-          >
-            <Settings className={`h-3.5 w-3.5 ${isAdminOpen ? "animate-spin" : ""}`} />
-            <span>{isAdminOpen ? "হোমপেজ ফিরুন" : "অফিসিয়াল লগইন"}</span>
-          </button>
-        </div>
-      </div>
-      <header className="bg-white py-4 px-4 md:px-8 border-b border-orange-100/50 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative select-none">
-        {/* Left Side: Brand Name & Double Tagline aligned cleanly to the left margins */}
-        <div className="w-full md:w-auto">
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="font-extrabold text-xl md:text-2xl text-[#E96A1F] tracking-tight leading-none">
-                বাংলার সেবা
-              </h1>
-              <span className="bg-[#E96A1F]/10 text-[#A94F12] text-[9px] font-extrabold px-1.5 py-0.5 rounded">নাগরিক গাইড</span>
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+              className="flex items-center gap-2.5 cursor-pointer group active:scale-95 transition-transform"
+            >
+              <img 
+                src={userLogo} 
+                className="h-10 w-10 sm:h-11 sm:w-11 object-contain select-none shrink-0" 
+                alt="সহজ সেবা লোগো" 
+                referrerPolicy="no-referrer"
+              />
+              <div className="flex flex-col">
+                <span className="font-extrabold text-[#0F172A] text-base md:text-lg leading-tight tracking-tight font-sans">
+                  সহজ সেবা
+                </span>
+                <span className="text-[9px] md:text-[10px] text-slate-450 font-black bg-gradient-to-r from-[#15803D] to-[#16A34A] bg-clip-text text-transparent uppercase tracking-wider font-sans">
+                  নাগরিক তথ্য ও সেবা পোর্টাল
+                </span>
+              </div>
             </div>
-            {/* Tagline 1 */}
-            <p className="text-[11px] text-slate-800 font-semibold leading-normal mt-1.5 font-sans">
-              আপনার সেবা, আপনার তথ্য, এক প্ল্যাটফর্মে (বেসরকারি উদ্যোগ)
-            </p>
-            {/* Tagline 2 */}
-            <p className="text-[10px] text-slate-500 font-medium leading-none mt-0.5 font-sans">
-              পশ্চিমবঙ্গ রাজ্য সামাজিক সুরক্ষা ও জনকল্যাণ প্রকল্প নির্দেশিকা
-            </p>
+
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center gap-6">
+              <button
+                onClick={() => {
+                  setIsAdminOpen(false);
+                  setTimeout(() => {
+                    const el = document.getElementById("hero");
+                    if (el) el.scrollIntoView({ behavior: "smooth" });
+                  }, 50);
+                }}
+                className={`text-xs font-bold font-sans transition-all py-2 px-3.5 rounded-xl flex items-center gap-1.5 cursor-pointer hover:bg-slate-50 ${
+                  !isAdminOpen ? "text-[#15803D] bg-emerald-50 font-semibold" : "text-slate-650 hover:text-[#15803D]"
+                }`}
+              >
+                <span>হোম পৃষ্ঠা</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setIsAdminOpen(false);
+                  setTimeout(() => {
+                    const el = document.getElementById("suggestion-box");
+                    if (el) el.scrollIntoView({ behavior: "smooth" });
+                  }, 50);
+                }}
+                className="text-xs font-bold font-sans text-slate-650 hover:text-[#15803D] hover:bg-slate-50 transition-all py-2 px-3.5 rounded-xl flex items-center gap-1.5 cursor-pointer"
+              >
+                <span>যোগাযোগ ও মতামত</span>
+              </button>
+
+              <button
+                onClick={() => setShowAdminPasswordModal(true)}
+                className="text-xs font-bold font-sans text-slate-650 hover:text-orange-650 hover:bg-orange-50 transition-all py-2 px-4 rounded-xl flex items-center gap-1.5 border border-slate-200 bg-slate-50 cursor-pointer shadow-xs active:scale-95"
+              >
+                <Shield className="h-3.5 w-3.5 text-orange-500" />
+                <span>অফিসের লগইন</span>
+              </button>
+            </div>
+
+            {/* Mobile Navigation Trigger */}
+            <div className="flex md:hidden">
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="p-2.5 rounded-xl text-slate-500 hover:text-slate-700 hover:bg-slate-100 focus:outline-hidden cursor-pointer"
+              >
+                {isMobileMenuOpen ? (
+                  <X className="h-5.5 w-5.5" />
+                ) : (
+                  <svg className="h-5.5 w-5.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                )}
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Right Side: Contact Hub (WhatsApp & Direct Phone Call) */}
-        <div className="flex flex-row items-center gap-2 w-full md:w-auto justify-stretch md:justify-end">
-          <a
-            href="https://wa.me/919382040746"
-            target="_blank"
-            rel="noreferrer"
-            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-3 py-2.5 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-xs border border-emerald-600 transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer font-sans text-center"
-          >
-            {/* Custom SVG WhatsApp Icon */}
-            <svg 
-              className="h-4 w-4 fill-current shrink-0" 
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413" />
-            </svg>
-            <span>হোয়াটসঅ্যাপ</span>
-          </a>
-
-          <a
-            href="tel:9382040746"
-            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-3 py-2.5 bg-[#E96A1F] hover:bg-[#A94F12] active:bg-[#8D3F0D] text-white font-extrabold text-xs rounded-xl shadow-xs border border-orange-600 transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer font-sans text-center"
-          >
-            <Phone className="h-3.8 w-3.8 shrink-0" />
-            <span>সরাসরি কল</span>
-          </a>
-        </div>
-      </header>
-
-      {/* 4. TOTAL WIDTH ACCESSIBLE NAVIGATION BAR (Official Government Portal style) */}
-      <nav className="bg-[#A94F12] text-white shadow-sm relative z-40 select-none border-b border-[#8D3F0D]">
-        <div className="max-w-7xl mx-auto px-4 md:px-8 py-0 flex items-center justify-between">
-          
-          {/* Desktop Links (Visible on Tablet/Desktop) - Professional non-button flat design */}
-          <ul className="hidden lg:flex items-center flex-wrap">
-            {[
-              { label: "হোম", href: "#hero" },
-              { label: "অফিসিয়াল ওয়েবসাইট", href: "#services" },
-              { label: "সাইবার ক্যাফে", href: "#cyber-cafe" },
-              { label: "এআই চ্যাট", href: "#help" }
-            ].map((item, idx) => {
-              const isActive = activeNav === item.label;
-              return (
-                <li key={idx} className="border-r border-white/10 last:border-0">
-                  <a
-                    href={item.href}
-                    onClick={(e) => {
-                      setActiveNav(item.label);
-                      if (item.label === "এআই চ্যাট") {
-                        e.preventDefault();
-                        setIsAiOpen(true);
-                      } else if (item.label === "হোম") {
-                        e.preventDefault();
-                        setSearchQuery("");
-                        setActiveSchemeTab("all");
-                        setActiveJobTab("all");
-                        window.scrollTo({ top: 0, behavior: "smooth" });
-                      } else if (item.label === "অফিসিয়াল ওয়েবসাইট") {
-                        e.preventDefault();
-                        document.getElementById("services-anchor")?.scrollIntoView({ behavior: "smooth" });
-                      } else if (item.label === "সাইবার ক্যাফে") {
-                        e.preventDefault();
-                        setDocCategory("cyber_cafe");
-                        setTimeout(() => {
-                           document.getElementById("digital-document-hub-section")?.scrollIntoView({ behavior: "smooth" });
-                        }, 50);
-                      }
-                    }}
-                    className={`inline-flex items-center px-4.5 py-3 text-xs font-bold uppercase transition-all tracking-wide relative group cursor-pointer ${
-                      isActive
-                        ? "text-amber-300 bg-[#8D3F0D]/60"
-                        : "text-orange-50 hover:text-white hover:bg-[#8D3F0D]/20"
-                    }`}
-                  >
-                    <span className="flex items-center gap-1.5">
-                      {item.label === "এআই চ্যাট" && (
-                        <MessageSquare className="h-3.5 w-3.5 text-amber-300 animate-pulse shrink-0" />
-                      )}
-                      <span>{item.label}</span>
-                    </span>
-                  </a>
-                </li>
-              );
-            })}
-          </ul>
-
-          {/* Mobile Navigation bar with direct compact links (Clean official flat tabs, not buttons) */}
-          <div className="lg:hidden flex items-center justify-between w-full py-0 overflow-x-auto scrollbar-none gap-2">
-            <div className="flex items-center whitespace-nowrap overflow-x-auto scrollbar-none">
-              {[
-                { label: "হোম", target: "hero" },
-                { label: "অফিসিয়াল ওয়েবসাইট", target: "services" },
-                { label: "সাইবার ক্যাফে", target: "cyber_cafe" }
-              ].map((item, idx) => {
-                const isItemActive = activeNav === item.label;
-                return (
-                  <button
-                    key={idx}
-                    onClick={(e) => {
-                      setActiveNav(item.label);
-                      if (item.target === "hero") {
-                        setSearchQuery("");
-                        setActiveSchemeTab("all");
-                        setActiveJobTab("all");
-                        window.scrollTo({ top: 0, behavior: "smooth" });
-                      } else if (item.target === "services") {
-                        document.getElementById("services-anchor")?.scrollIntoView({ behavior: "smooth" });
-                      } else if (item.target === "cyber_cafe") {
-                        setDocCategory("cyber_cafe");
-                        setTimeout(() => {
-                          document.getElementById("digital-document-hub-section")?.scrollIntoView({ behavior: "smooth" });
-                        }, 50);
-                      }
-                    }}
-                    className={`px-3 py-2.5 text-xs font-bold transition-all relative cursor-pointer ${
-                      isItemActive
-                        ? "text-amber-300 bg-[#8D3F0D]/60 font-extrabold"
-                        : "text-orange-100 hover:text-white"
-                    }`}
-                  >
-                    <span>{item.label}</span>
-                    {isItemActive && (
-                      <span className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-amber-400"></span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-            
-            {/* Simple Help / Ai shortcut - styled as a refined clean text tab link with chat icon */}
+        {/* Mobile Dropdown Menu */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden border-t border-slate-150 bg-white px-4 py-3 space-y-2 animate-fade-in shadow-xs">
             <button
               onClick={() => {
-                setActiveNav("এআই চ্যাট");
-                setIsAiOpen(true);
+                setIsAdminOpen(false);
+                setIsMobileMenuOpen(false);
+                setTimeout(() => {
+                  const el = document.getElementById("hero");
+                  if (el) el.scrollIntoView({ behavior: "smooth" });
+                }, 50);
               }}
-              className={`px-3 py-2.5 text-xs font-bold text-amber-300 hover:text-white flex items-center gap-1.5 whitespace-nowrap shrink-0 cursor-pointer relative ${
-                activeNav === "এআই চ্যাট" ? "bg-[#8D3F0D]/60 font-extrabold" : ""
-              }`}
+              className="w-full text-left text-xs font-bold font-sans text-slate-700 hover:text-[#15803D] hover:bg-slate-50 py-3 px-3.5 rounded-xl block cursor-pointer transition-all"
             >
-              <MessageSquare className="h-3.5 w-3.5 text-amber-300 animate-pulse shrink-0" />
-              <span>এআই চ্যাট</span>
-              {activeNav === "এআই চ্যাট" && (
-                <span className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-amber-400"></span>
-              )}
+              হোম পৃষ্ঠা
+            </button>
+            
+            <button
+              onClick={() => {
+                setIsAdminOpen(false);
+                setIsMobileMenuOpen(false);
+                setTimeout(() => {
+                  const el = document.getElementById("suggestion-box");
+                  if (el) el.scrollIntoView({ behavior: "smooth" });
+                }, 50);
+              }}
+              className="w-full text-left text-xs font-bold font-sans text-slate-700 hover:text-[#15803D] hover:bg-slate-50 py-3 px-3.5 rounded-xl block cursor-pointer transition-all"
+            >
+              যোগাযোগ ও মতামত
+            </button>
+
+            <button
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                setShowAdminPasswordModal(true);
+              }}
+              className="w-full text-left text-xs font-bold font-sans text-orange-700 bg-orange-50 hover:bg-orange-100/50 py-3 px-3.5 rounded-xl flex items-center gap-2 cursor-pointer transition-all"
+            >
+              <Shield className="h-4 w-4 text-orange-500" />
+              <span>অফিসের লগইন</span>
             </button>
           </div>
- 
-        </div>
+        )}
       </nav>
-
-
-
-
-
-      {/* Main Container / Content Conditional (re-wired properly) */}
+      
+      {/* 4. Main Container / Content Conditional */}
       <main className="flex-grow">
         {isAdminOpen ? (
           <div className="max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-10">
@@ -1729,231 +1927,328 @@ export default function App() {
               firebaseStatus={firebaseStatus}
               settings={settings}
               onSaveSettings={handleSaveSettings}
+              suggestions={suggestions}
+              onSaveSuggestion={handleSaveSuggestion}
+              onDeleteSuggestion={handleDeleteSuggestion}
             />
           </div>
         ) : (
           <>
-            {/* 1. SEAMLESS COMPACT SEARCH HERO (Lightened, modern light-orange-cream gradient) */}
-            <div className="w-full relative py-8 md:py-14 px-4 md:px-8 border-b border-orange-100/70 select-none overflow-hidden">
-              {/* Blurred West Bengal landmarks hero background image */}
-              <div className="absolute inset-0 w-full h-full pointer-events-none select-none z-0">
+            {/* 1. SEAMLESS COMPACT SEARCH HERO (Premium Responsive Brand Hub with dual-green accents) */}
+            <div id="hero" className="w-full relative py-8 sm:py-10 md:py-12 px-4 md:px-8 border-b border-slate-200 select-none overflow-hidden bg-white animate-fade-in flex flex-col justify-center min-h-[190px] sm:min-h-[220px] md:min-h-[240px]">
+              
+              {/* Background Howrah Bridge Sunset Image spanning full width/height with higher saturation & contrast */}
+              <div className="absolute inset-0 select-none pointer-events-none z-0">
                 <img
-                  src={kolkataHeroBanner}
-                  alt="পশ্চিমবঙ্গ হেরিটেজ ব্যানার"
+                  src="https://images.unsplash.com/photo-1558431382-27e303142255?auto=format&fit=crop&w=1800&q=85"
+                  alt="Howrah Bridge Sunset"
+                  className="w-full h-full object-cover object-center brightness-[0.92] contrast-120 saturate-135"
                   referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover blur-[1px] opacity-35 scale-102 pointer-events-none"
                 />
-                {/* Overlay modern smooth gradient for optimal readability */}
-                <div className="absolute inset-0 bg-gradient-to-b from-amber-50/60 via-amber-50/30 to-[#FFF8F4]/80"></div>
               </div>
 
-              {/* Subtle background abstract shapes */}
-              <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
-              <div className="absolute bottom-0 left-0 w-80 h-80 bg-black/10 rounded-full blur-2xl -ml-20 -mb-20 pointer-events-none"></div>
-              
-              <div className="max-w-4xl mx-auto text-center space-y-4 relative z-10">
-                <h2 className="font-extrabold text-xl md:text-3xl text-slate-800 tracking-tight leading-tight">
-                  পশ্চিমবঙ্গ রাজ্য সামাজিক সুরক্ষা ও জনকল্যাণ প্রকল্প নির্দেশিকা
-                </h2>
-                <p className="text-xs md:text-sm text-slate-500 font-semibold max-w-xl mx-auto">
-                  আপনার প্রয়োজনীয় সরকারি প্রকল্প, চাকরি বা বৃত্তির সঠিক তথ্য বাংলায় অনুসন্ধান করুন
-                </p>
+              {/* Overlays for smooth blend & premium legibility */}
+              <div className="absolute inset-0 bg-black/15 z-[1] select-none pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-r from-white via-white/94 sm:via-white/88 md:via-white/72 to-transparent z-[2] select-none pointer-events-none" />
+              <div className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-white to-transparent z-[3] select-none pointer-events-none" />
 
-                {/* Main Interactive Search Input */}
-                <div className="max-w-2xl mx-auto mt-4 relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none font-bold">
-                    <Search className="h-5 w-5 text-slate-400" />
-                  </div>
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="অনুসন্ধান করুন..."
-                    className="w-full bg-white text-slate-900 border border-orange-100/85 rounded-2xl pl-11 pr-4 py-3.5 text-sm md:text-base font-bold placeholder-slate-405 focus:outline-none focus:ring-4 focus:ring-orange-105/50 shadow-md"
-                  />
-                  {searchQuery && (
-                    <button
-                      onClick={() => setSearchQuery("")}
-                      className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 font-bold"
-                    >
-                      <X className="h-4.5 w-4.5" />
-                    </button>
-                  )}
+              {/* Foreground Content */}
+              <div className="max-w-7xl mx-auto flex flex-col items-start relative z-10 w-full space-y-2 sm:space-y-3">
+                
+                {/* TYPOGRAPHY GROUP (Shifted slightly upward via tighter spacing) */}
+                <div className="space-y-0.5 align-left text-left">
+                  <h1 className="font-extrabold text-[#0F172A] text-lg sm:text-xl md:text-2.5xl tracking-tight leading-none mb-0.5 font-sans">
+                    সহজ সেবা
+                  </h1>
+                  <h2 className="text-xs sm:text-sm md:text-md font-extrabold bg-gradient-to-r from-[#15803D] to-[#16A34A] bg-clip-text text-transparent font-sans">
+                    সব সেবা, এক ক্লিকে
+                  </h2>
+                  <h3 className="text-[10px] sm:text-[11px] md:text-xs text-slate-500 font-medium font-sans max-w-lg md:max-w-xl leading-relaxed">
+                    পশ্চিমবঙ্গের প্রতিটি নাগরিকের জন্য সরকারি প্রকল্প, চাকরি, স্কলারশিপ এবং ডিজিটাল সেবার নির্ভরযোগ্য তথ্য ও লিঙ্ক একত্রে বাংলায়।
+                  </h3>
                 </div>
 
-                {/* Dynamic Eye-Catching Compact Categories Grid */}
-                <div className="max-w-4xl mx-auto mt-6 pt-4 border-t border-orange-100/40">
-                  <p className="text-[10px] md:text-xs text-slate-400 font-bold tracking-widest uppercase mb-3.5 text-center">
-                    সরাসরি প্রয়োজনীয় ডকুমেন্টস বা সরকারি কার্ড বিভাগে এগিয়ে যান
-                  </p>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:flex md:flex-wrap md:justify-center gap-2 px-1">
-                    {[
-                      {
-                        id: "all",
-                        label: "সব নথি ও কার্ড",
-                        desc: `${allDashboardItems.length}+ সরকারি সেবা`,
-                        iconName: "Grid",
-                      },
-                      ...categories
-                    ].map((cat) => {
-                      const IconComponent = getCategoryIcon(cat.iconName);
-                      const styles = getCategoryStyle(cat.id);
-                      const isActive = docCategory === cat.id;
-                      return (
-                        <button
-                          key={cat.id}
-                          onClick={() => {
-                            setDocCategory(cat.id);
-                            setTimeout(() => {
-                              document.getElementById("digital-document-hub-section")?.scrollIntoView({ behavior: "smooth" });
-                            }, 50);
-                          }}
-                          className={`flex items-center gap-2 px-2.5 py-1.5 md:px-3 md:py-2 rounded-xl border text-left transition-all duration-200 transform scale-100 hover:scale-[1.01] active:scale-95 cursor-pointer relative overflow-hidden group w-full md:w-auto md:min-w-[140px] md:max-w-[190px] ${
-                            isActive ? styles.bgActive : styles.bgDefault
-                          }`}
-                        >
-                          <div className={`p-1.5 rounded-lg transition-all shrink-0 ${
-                            isActive ? styles.iconBgActive : styles.iconBgDefault
-                          }`}>
-                            <IconComponent className="h-3.8 w-3.8 shrink-0" />
-                          </div>
-                          <div className="flex flex-col min-w-0">
-                            <span className="font-extrabold text-[11px] leading-tight whitespace-normal break-words line-clamp-2">
-                              {cat.label}
-                            </span>
-                            <span className={`text-[8.5px] font-semibold mt-0.5 line-clamp-1 leading-none ${isActive ? "text-white/85" : "text-slate-400"}`}>
-                              {cat.desc}
-                            </span>
-                          </div>
-                        </button>
-                      );
-                    })}
+                {/* DYNAMIC NEO-PILL SEARCH BAR */}
+                <div className="w-full max-w-2xl bg-white/80 backdrop-blur-md p-1 rounded-xl sm:rounded-2xl border border-slate-200/90 shadow-[0_4px_20px_-4px_rgba(15,23,42,0.05)] flex flex-col sm:flex-row items-center gap-1.5 sm:gap-2">
+                  <div className="flex-1 flex items-center gap-2 w-full pl-2">
+                    <Search className="h-4 w-4 text-slate-400 shrink-0" />
+                    <input
+                      type="text"
+                      className="bg-transparent border-none outline-hidden h-8 sm:h-10 w-full text-xs sm:text-sm font-semibold text-slate-800 placeholder-slate-400 font-sans"
+                      placeholder="আধার কার্ড, লক্ষ্মীর ভান্ডার বা 'Aadhaar', 'Job', 'Scholarship'..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                    {searchQuery && (
+                      <button
+                        onClick={() => setSearchQuery("")}
+                        className="p-1 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-650 cursor-pointer"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    )}
                   </div>
+                  <button
+                    onClick={() => {
+                      const el = document.getElementById("services-anchor");
+                      if (el) el.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className="w-full sm:w-auto px-4 h-8 sm:h-10 text-xs font-black text-white bg-gradient-to-r from-[#15803D] to-[#16A34A] hover:to-[#22C55E] rounded-lg sm:rounded-xl transition-all duration-300 shadow-sm flex items-center justify-center gap-1 cursor-pointer select-none"
+                  >
+                    <span>খুঁজুন</span>
+                    <Search className="h-3 w-3" />
+                  </button>
+                </div>
+
+              </div>
+            </div>
+
+            {/* SEPARATED CLEAN WHITE BACKGROUND CONTAINER FOR CATEGORY FILTER TRACK SLIDER with a subtle dividing line */}
+            <div className="w-full bg-white border-b border-slate-200/70 select-none py-4 px-4 md:px-8 relative z-10">
+              <div className="max-w-7xl mx-auto space-y-2">
+                <div className="text-[10px] text-slate-400 font-black tracking-wider uppercase font-sans select-none text-left">ক্যাটাগরি ফিল্টার করুন:</div>
+                <div className="flex flex-wrap items-center gap-1.5 md:gap-2 select-none w-full">
+                  {[
+                    { id: "all", label: "সব সেবা", icon: Grid },
+                    { id: "welfare", label: "জনকল্যাণ প্রকল্প", icon: Sparkles },
+                    { id: "jobs", label: "সরকারি ও বেসরকারি চাকরি", icon: Briefcase },
+                    { id: "scholarships", label: "স্কলারশিপ ও অনুদান", icon: GraduationCap },
+                    { id: "identity", label: "আধার ও পরিচয়পত্র", icon: IdCard },
+                    { id: "utility", label: "সার্টিফিকেট ও লাইসেন্স", icon: FileText },
+                    { id: "land", label: "জমি ও সম্পত্তি", icon: MapPin }
+                  ].map((cat) => {
+                    const IconComponent = cat.icon;
+                    const isCatActive = docCategory === cat.id;
+                    return (
+                      <button
+                        key={cat.id}
+                        onClick={() => setDocCategory(cat.id)}
+                        className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-300 flex items-center gap-1.5 cursor-pointer border select-none ${
+                          isCatActive
+                            ? "bg-[#DCFCE7] text-[#15803D] border-[#86EFAC] font-extrabold shadow-sm scale-[1.02]"
+                            : "text-slate-650 bg-slate-50 border-slate-200/60 hover:bg-slate-100/80 hover:text-[#15803D]"
+                        }`}
+                      >
+                        <IconComponent className={`h-3.5 w-3.5 ${isCatActive ? "text-[#15803D]" : "text-slate-400"}`} />
+                        <span>{cat.label}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </div>
 
-            {/* 2. GANABHABAN BRANDED HUB OF OFFICIAL PORTALS - FLUSH WITH HERO */}
-            <div id="services-anchor" />
-            <section id="digital-document-hub-section" className="w-full bg-gradient-to-b from-[#FFF8F4] to-[#F9FBFC] pb-10 pt-4 px-4 md:px-8 border-b border-orange-100/40 animate-fade-in select-none">
-              <div className="max-w-7xl mx-auto space-y-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-orange-100/60 pb-5">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <div className="p-2.5 bg-gradient-to-br from-orange-50 to-amber-100/60 text-bengali-orange rounded-2xl border border-orange-250/20 shadow-2xs">
-                      <Shield className="h-5.5 w-5.5 text-bengali-orange animate-pulse" />
-                    </div>
-                    <div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="font-black text-base md:text-lg text-slate-800 tracking-tight">বাংলার সেবার সমস্ত অফিসিয়াল ওয়েবসাইট</h3>
-                        {docCategory !== "all" && (
-                          <span className="px-2 py-0.5 text-[10px] md:text-xs bg-orange-100 text-bengali-orange border border-orange-200/50 rounded-lg font-bold animate-fade-in">
-                            {categories.find((c) => c.id === docCategory)?.label || docCategory}
-                          </span>
-                        )}
+          {/* 2. GANABHABAN BRANDED HUB OF OFFICIAL PORTALS - FLUSH WITH HERO */}
+          <div id="services-anchor" />
+          <section id="digital-document-hub-section" className="w-full bg-gradient-to-b from-white via-slate-50 to-slate-50/20 pb-16 pt-5 px-4 md:px-8 animate-fade-in select-none">
+            <div className="max-w-7xl mx-auto">
+              {/* Responsive Cards Grid - Desktop: 5 columns for extremely neat compact look, Mobile: 2 Columns */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4.5 font-sans">
+                {displayedItems.length === 0 ? (
+                  <div className="col-span-full py-16 px-4 text-center bg-white/65 backdrop-blur-xs border border-dashed border-orange-200 rounded-3xl animate-fade-in flex flex-col items-center justify-center space-y-2">
+                    <HelpCircle className="h-10 w-10 text-orange-300" />
+                    <p className="text-sm text-slate-700 font-extrabold font-sans">কোনো নাগরিক সেবা বা অফিশিয়াল লিংক পাওয়া যায়নি।</p>
+                    <p className="text-xs text-slate-500 max-w-md">অফিসিয়াল লগইন (Admin) সেকশনে গিয়ে নতুন সেবা, প্রকল্প বা নোটিফিকেশন যুক্ত করুন, যা রিয়েল-টাইমে এখানে সরাসরি যুক্ত হবে।</p>
+                  </div>
+                ) : (
+                  displayedItems.map((item) => {
+                    const { rating, badgeText } = getServiceMetadata(item.id, item.cat || item.category || "");
+                    const style = getCategoryColorAccent(item.cat || item.category || "");
+                    return (
+                      <div
+                        key={item.id}
+                        onClick={() => {
+                          setSelectedService({
+                            id: item.id,
+                            title: item.title,
+                            description: item.description,
+                            steps: item.steps,
+                            officialUrl: item.officialUrl,
+                            category: item.cat,
+                            categoryName: item.badge,
+                            logoUrl: item.logoUrl || ""
+                          });
+                        }}
+                        className={`p-3.5 sm:p-4.5 bg-white/80 backdrop-blur-md bg-gradient-to-br ${style.gradient} border border-slate-200/80 ${style.borderAccent} ${style.glow} min-h-[135px] sm:min-h-[145px] h-auto rounded-[20px] cursor-pointer hover:-translate-y-1 group transition-all duration-300 flex flex-col justify-between gap-3 relative overflow-hidden select-none`}
+                        id={`service-card-${item.id}`}
+                      >
+                        {/* Elegant custom dynamic color glow spot matching category */}
+                        <div className={`absolute -top-14 -right-14 w-28 h-28 rounded-full bg-gradient-to-br ${style.orbGradient} blur-2xl opacity-35 group-hover:opacity-65 transition-opacity duration-500`} />
+                        <div className="absolute -bottom-16 -left-16 w-14 h-14 rounded-full bg-slate-500/5 blur-xl group-hover:bg-slate-500/8 transition-colors duration-300" />
+
+                        {/* Top Accent Row: Icon box & Sleek arrow link wrapper */}
+                        <div className="flex items-center justify-between w-full relative z-10">
+                          {/* Large colorful icon/logo area with rounded-xl style - No solid white override so dynamic category color shows perfectly under transparent logos */}
+                          <div className={`w-9.5 h-9.5 sm:w-10.5 sm:h-10.5 rounded-[12px] sm:rounded-[14px] flex items-center justify-center shrink-0 border ${style.iconBorder} ${style.iconBg} relative shadow-3xs overflow-hidden transition-all duration-350 group-hover:scale-105`}>
+                            {/* Inner ambient shine overlay */}
+                            <div className="absolute inset-0 bg-white/5 opacity-50 rounded-[12px] sm:rounded-[14px]" />
+                            
+                            {item.logoUrl ? (
+                              <img 
+                                src={item.logoUrl} 
+                                className="w-full h-full rounded-[10px] sm:rounded-[12px] object-contain p-1 transition-transform duration-300 shrink-0 bg-transparent" 
+                                referrerPolicy="no-referrer" 
+                                alt="" 
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                              />
+                            ) : (
+                              <div className="w-full h-full group-hover:scale-105 transition-transform duration-350 shrink-0 flex items-center justify-center p-1 [&_svg]:w-full [&_svg]:h-full [&_svg]:shrink-0">
+                                {renderOfficialLogo(item.id)}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Minimal SaaS action bubble on top right */}
+                          <div className="shrink-0">
+                            <span className={`w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl flex items-center justify-center border border-slate-200/40 shadow-3xs transition-all duration-300 ${style.arrowClass} group-hover:translate-x-0.5 group-hover:-translate-y-0.5`}>
+                              <ArrowUpRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 transition-transform duration-300 group-hover:rotate-45" />
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Content Area: Modern high-contrast typography and auto-growing row alignment */}
+                        <div className="space-y-2.5 min-w-0 relative z-10 flex-1 flex flex-col justify-between">
+                          <h4 className="font-extrabold text-[12px] sm:text-[13px] text-slate-800 leading-snug tracking-tight transition-colors duration-250 group-hover:text-slate-900 group-hover:translate-x-0.5 max-w-[98%] line-clamp-2 select-text">
+                            {item.title}
+                          </h4>
+
+                          {/* Footer row: custom status capsule & rating metrics */}
+                          <div className="flex items-center justify-between gap-1.5 pt-1.5 border-t border-slate-100/60 group-hover:border-slate-200/40 transition-colors mt-auto">
+                            {/* Soft pill dynamic tag */}
+                            <span className={`inline-flex items-center gap-1 text-[8px] sm:text-[9.5px] font-black px-2 py-0.5 rounded-lg border ${style.badgeBg} truncate max-w-[70%] sm:max-w-none shadow-[inset_0_1px_2px_rgba(255,255,255,0.4)]`}>
+                              <span className={`w-1 h-1 rounded-full ${style.badgeDot} shrink-0`} />
+                              <span className="truncate">{badgeText}</span>
+                            </span>
+
+                            {/* Crisp glassmorphic rating badge */}
+                            <span className="inline-flex items-center gap-0.5 text-[8px] sm:text-[9.5px] font-black text-amber-600 bg-amber-55/10 hover:bg-amber-55/20 border border-amber-150/30 px-1.5 py-0.5 rounded-lg shrink-0 shadow-3xs">
+                              ★ {rating}
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                      <p className="text-xs text-slate-500 font-medium mt-0.5">অরিジナル লোগো ও ডিজিটাল চিপ সংবলিত স্মার্ট কার্ড ডিরেক্টরি</p>
-                    </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          </section>
+
+          {/* SUGGESTION BOX SECTION */}
+          <section id="suggestion-box" className="w-full relative py-6 sm:py-8 px-4 md:px-8 bg-slate-50/70 border-t border-b border-slate-200 select-none">
+            <div className="max-w-7xl mx-auto w-full animate-fade-in animate-duration-300">
+              
+              {/* Header with feedback icon and title, neat, small */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-slate-200/50 pb-3 mb-4">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 bg-emerald-50 rounded-lg text-emerald-600 border border-emerald-100">
+                    <MessageSquare className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-extrabold text-slate-800">নাগরিক মতামত ও পরামর্শ বক্স</h3>
+                    <p className="text-[10px] text-slate-500 font-medium">সহজ সেবাকে আরও উন্নত করতে আপনার মূল্যবান মতামত জানান</p>
                   </div>
                 </div>
-
-                {/* Compact side-by-side cards grid */}
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
-                  {displayedItems.length === 0 ? (
-                    <div className="col-span-full py-16 px-4 text-center bg-white/65 backdrop-blur-xs border border-dashed border-orange-200 rounded-3xl animate-fade-in flex flex-col items-center justify-center space-y-2">
-                      <HelpCircle className="h-10 w-10 text-orange-300" />
-                      <p className="text-sm text-slate-700 font-extrabold font-sans">কোনো নাগরিক সেবা বা অফিশিয়াল লিংক পাওয়া যায়নি।</p>
-                      <p className="text-xs text-slate-500 max-w-md">অফিসিয়াল লগইন (Admin) সেকশনে গিয়ে নতুন সেবা, প্রকল্প বা নোটিফিকেশন যুক্ত করুন, যা রিয়েল-টাইমে এখানে সরাসরি যুক্ত হবে।</p>
-                    </div>
-                  ) : (
-                    displayedItems
-                      .map((item) => {
-                        const { rating, badgeText } = getServiceMetadata(item.id, item.cat || item.category || "");
-                        const style = getCategoryColorAccent(item.cat || item.category || "");
-                        return (
-                          <div
-                            key={item.id}
-                            onClick={() => {
-                              setSelectedService({
-                                id: item.id,
-                                title: item.title,
-                                description: item.description,
-                                steps: item.steps,
-                                officialUrl: item.officialUrl,
-                                category: item.cat,
-                                categoryName: item.badge,
-                                logoUrl: item.logoUrl || ""
-                              });
-                            }}
-                            className={`p-2.5 xs:p-3.5 md:p-5 rounded-[22px] bg-gradient-to-br ${style.gradient} border border-slate-200/50 hover:shadow-xl ${style.glow} duration-300 hover:border-slate-350 cursor-pointer transition-all hover:-translate-y-1.5 group select-none flex items-center gap-2 xs:gap-3 md:gap-4 relative overflow-hidden backdrop-blur-md`}
-                            id={`service-card-${item.id}`}
-                          >
-                            {/* Accent Glow Circle inside card simulating Neumorphic Glass overlay */}
-                            <div className="absolute -top-12 -right-12 w-24 h-24 rounded-full bg-white/15 blur-xl group-hover:bg-white/20 transition-all duration-500" />
-                            
-                            {/* Inner horizontal layout container */}
-                            <div className="flex items-center gap-2 xs:gap-3 md:gap-4 w-full min-w-0">
-                              {/* 1. Large circular icon/logo area on the left */}
-                              <div className={`w-11 h-11 xs:w-12 xs:h-12 md:w-15 md:h-15 rounded-full flex items-center justify-center shrink-0 border ${style.iconBorder} ${style.iconBg} relative shadow-sm overflow-hidden bg-white [&_svg]:w-full [&_svg]:h-full [&_svg]:p-0.5`}>
-                                {/* Neumorph shadow details on the circle */}
-                                <div className="absolute inset-0 rounded-full bg-white/5 opacity-80" />
-                                
-                                {item.logoUrl ? (
-                                  <img 
-                                    src={item.logoUrl} 
-                                    className="w-full h-full rounded-full object-cover p-0.5 group-hover:scale-110 transition-transform duration-300 shrink-0 bg-white" 
-                                    referrerPolicy="no-referrer" 
-                                    alt="" 
-                                    onError={(e) => {
-                                      e.currentTarget.style.display = 'none';
-                                    }}
-                                  />
-                                ) : (
-                                  <div className="w-full h-full group-hover:scale-110 transition-transform duration-300 shrink-0 flex items-center justify-center p-0">
-                                    {renderOfficialLogo(item.id)}
-                                  </div>
-                                )}
-                              </div>
-
-                              {/* 2. Middle area: Service Title, Description, and Badges */}
-                              <div className="flex-1 min-w-0 space-y-1 md:space-y-1.5 py-0.5">
-                                <h4 className="font-extrabold text-[12px] xs:text-[13px] sm:text-sm md:text-base text-slate-800 leading-snug tracking-tight group-hover:text-bengali-orange transition-colors duration-300 line-clamp-1">
-                                  {item.title}
-                                </h4>
-                                
-                                <p className="text-[10px] xs:text-[10.5px] sm:text-[11px] md:text-xs text-slate-500 leading-snug font-medium line-clamp-1">
-                                  {item.description ? item.description.replace(/সুবিধা:|যোগ্যতা:|পরিমাপ:|শূন্যপদ:/g, '').trim() : "ডিজিটাল পোর্টাল ও অনলাইন আবেদন প্রক্রিয়া"}
-                                </p>
-                                
-                                {/* Badge and rating row */}
-                                <div className="flex flex-wrap items-center gap-1 sm:gap-2 pt-0.5">
-                                  {/* Small status badge */}
-                                  <span className={`inline-flex items-center gap-0.5 xs:gap-1 text-[8px] xs:text-[9px] md:text-[10px] font-bold px-1.5 xs:px-2 py-0.5 rounded-full border ${style.badgeBg}`}>
-                                    <span className={`w-1 xs:w-1.5 h-1 xs:h-1.5 rounded-full ${style.badgeDot} shrink-0`} />
-                                    {badgeText}
-                                  </span>
-
-                                  {/* Rating badge */}
-                                  <span className="inline-flex items-center gap-0.5 text-[8px] xs:text-[9px] md:text-[10px] font-bold text-amber-600 bg-amber-50/60 border border-amber-100 px-1.5 xs:px-2 py-0.5 rounded-full">
-                                    ★ {rating}
-                                  </span>
-                                </div>
-                              </div>
-
-                              {/* 3. Modern arrow action button on the right */}
-                              <div className="shrink-0 flex items-center justify-center ml-0.5 xs:ml-1">
-                                <span className={`w-7 h-7 xs:w-8 xs:h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center border border-slate-200/50 shadow-xs transition-all duration-300 ${style.arrowClass} group-hover:scale-105 shrink-0`}>
-                                  <ArrowUpRight className="h-3 w-3 xs:h-3.5 xs:w-3.5 md:h-4.5 md:w-4.5 transition-transform duration-300 group-hover:rotate-45" />
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })
-                  )}
-                </div>
               </div>
-            </section>
 
+              {suggestionSubmitted ? (
+                <div className="py-4 flex flex-col items-center justify-center text-center space-y-2 animate-fade-in">
+                  <div className="h-10 w-10 bg-emerald-50 rounded-full border border-emerald-100 flex items-center justify-center text-emerald-500">
+                    <CheckCircle2 className="h-5 w-5 animate-bounce" />
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="text-xs font-black text-slate-800">মতামত সফলভাবে জমা হয়েছে!</h4>
+                    <p className="text-[10px] text-slate-500 font-semibold">
+                      আপনার গুরুত্বপূর্ণ পরামর্শ বা সমস্যাটি রিয়েল-টাইমে সেভ করা হয়েছে। ধন্যবাদ।
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <form onSubmit={submitSuggestionForm} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-3.5 items-end">
+                  
+                  {/* Name field */}
+                  <div className="md:col-span-3 space-y-1">
+                    <label className="text-[10px] font-extrabold text-slate-600 flex items-center gap-1">
+                      <span>আপনার নাম</span>
+                      <span className="text-[8px] text-slate-400 font-normal">(ঐচ্ছিক)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={suggestionName}
+                      onChange={(e) => setSuggestionName(e.target.value)}
+                      placeholder="যেমন: উজ্জ্বল দে"
+                      className="w-full px-3 py-1.5 text-xs font-semibold border border-slate-200 rounded-lg focus:outline-hidden focus:ring-4 focus:ring-emerald-100/40 focus:border-[#15803D] bg-white hover:bg-slate-50/50 transition-all text-slate-800"
+                    />
+                  </div>
+
+                  {/* Mobile No field */}
+                  <div className="md:col-span-3 space-y-1">
+                    <label className="text-[10px] font-extrabold text-slate-600 flex items-center gap-1 font-sans">
+                      <span>মোবাইল নম্বর</span>
+                      <span className="text-[8px] text-slate-400 font-normal">(ঐচ্ছিক)</span>
+                    </label>
+                    <input
+                      type="tel"
+                      value={suggestionMobile}
+                      onChange={(e) => setSuggestionMobile(e.target.value)}
+                      placeholder="যেমন: 9382040746"
+                      className="w-full px-3 py-1.5 text-xs font-semibold border border-slate-200 rounded-lg focus:outline-hidden focus:ring-4 focus:ring-emerald-100/40 focus:border-[#15803D] bg-white hover:bg-slate-50/50 transition-all text-slate-800 font-sans"
+                    />
+                  </div>
+
+                  {/* Suggestion Type block */}
+                  <div className="md:col-span-2 space-y-1}>">
+                    <label className="text-[10px] font-extrabold text-slate-600">মন্তব্যের ধরন</label>
+                    <select
+                      value={suggestionType}
+                      onChange={(e) => setSuggestionType(e.target.value)}
+                      className="w-full px-2.5 py-1.5 text-xs font-semibold border border-slate-200 rounded-lg bg-white text-slate-700 outline-hidden focus:ring-4 focus:ring-emerald-100/40 focus:border-[#15803D] transition-all"
+                    >
+                      <option value="difficulty">সমস্যা</option>
+                      <option value="feature">নতুন ফিচার</option>
+                      <option value="other">অন্যান্য</option>
+                    </select>
+                  </div>
+
+                  {/* Message field & submit button */}
+                  <div className="md:col-span-4 space-y-1">
+                    <label className="text-[10px] font-extrabold text-slate-600 flex items-center justify-between">
+                      <span>আপনার সাজেশান বা অভিযোগ</span>
+                      <span className="text-[8px] text-red-500 font-bold">*প্রয়োজনীয়</span>
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={suggestionText}
+                        onChange={(e) => setSuggestionText(e.target.value)}
+                        required
+                        placeholder="আপনার পরামর্শ বা সমস্যাটি লিখুন..."
+                        className="flex-1 px-3 py-1.5 text-xs font-semibold border border-slate-200 rounded-lg focus:outline-hidden focus:ring-4 focus:ring-emerald-100/40 focus:border-[#15803D] bg-white hover:bg-slate-50 transition-all text-slate-800 placeholder-slate-400"
+                      />
+                      <button
+                        type="submit"
+                        disabled={suggestionSubmitting}
+                        className="bg-gradient-to-r from-[#15803D] to-[#16A34A] hover:to-[#22C55E] text-white font-black text-xs px-4 rounded-lg shadow-sm transition-all duration-150 cursor-pointer flex items-center justify-center gap-1 hover:shadow-md disabled:opacity-75 disabled:cursor-not-allowed shrink-0 whitespace-nowrap h-[32px]"
+                      >
+                        {suggestionSubmitting ? (
+                          <span className="h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                        ) : (
+                          <>
+                            <MessageSquare className="h-3.5 w-3.5" />
+                            <span>জমা দিন</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                </form>
+              )}
+
+            </div>
+          </section>
         </>
       )}
 
@@ -1991,21 +2286,170 @@ export default function App() {
       </section>
 
       {/* 5. USER DISCLAIMER BAR (STRICT ASSIGNED TEXT) */}
-      <footer className="bg-[#1E3A5F] text-white py-8 px-6 border-t border-slate-900/40 text-xs text-center">
-        <div className="max-w-4xl mx-auto space-y-4">
-          <div className="flex flex-wrap justify-center gap-4 text-white/50 text-[11px] mb-2 font-medium">
-            <button onClick={() => setActiveLegalModal("terms")} className="hover:text-white transition-colors cursor-pointer focus:outline-hidden">পরিষেবা নির্দেশিকা</button>
-            <span>•</span>
-            <button onClick={() => setActiveLegalModal("disclaimer")} className="hover:text-white transition-colors cursor-pointer focus:outline-hidden">আইনী নোটিশ</button>
-            <span>•</span>
-            <button onClick={() => setActiveLegalModal("privacy")} className="hover:text-white transition-colors cursor-pointer focus:outline-hidden">গোপনীয়তা নীতি</button>
+      <footer className="relative w-full overflow-hidden bg-gradient-to-br from-[#064E3B] via-[#065F46] to-[#022C22] text-white pt-8 pb-0 border-t border-emerald-800/60 shadow-[0_-10px_30px_rgba(6,78,59,0.12)] flex flex-col justify-between">
+        {/* Modern SaaS Grid/Glow Overlay */}
+        <div className="absolute inset-0 z-0 opacity-[0.03] bg-[linear-gradient(rgba(255,255,255,.07)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.07)_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
+        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-emerald-400/30 to-transparent z-1 pointer-events-none" />
+        <div className="absolute -top-40 left-12 w-96 h-96 rounded-full bg-emerald-500/10 blur-3xl z-0 pointer-events-none" />
+        
+        <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-8 w-full pb-8 pt-2">
+          <div className="grid grid-cols-4 gap-4 sm:gap-6 md:gap-8">
+            
+            {/* Left Section: Logo, Tagline, Bio & Socials */}
+            <div className="col-span-4 sm:col-span-4 md:col-span-1 space-y-3">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2.5">
+                  <img 
+                    src={userLogo} 
+                    className="h-8 w-8 object-contain bg-white/10 backdrop-blur-md rounded-lg p-1 border border-white/20 select-none shrink-0" 
+                    alt="সহজ সেবা লোগো" 
+                    referrerPolicy="no-referrer"
+                  />
+                  <span className="font-extrabold text-base sm:text-lg tracking-tight text-white font-sans">
+                    সহজ সেবা
+                  </span>
+                </div>
+                <div className="inline-block px-1.5 py-0.5 bg-emerald-500/10 border border-emerald-400/20 rounded-md text-[8px] sm:text-[9px] font-black text-emerald-300 tracking-wider font-sans">
+                  সব সেবা, এক ক্লিকে
+                </div>
+              </div>
+              
+              <p className="text-[10px] sm:text-xs text-white/70 leading-relaxed font-sans max-w-none font-medium">
+                পশ্চিমবঙ্গের নাগরিকদের জন্য সরকারি, শিক্ষা, চাকরি, স্বাস্থ্য ও প্রয়োজনীয় সকল সেবার নির্ভরযোগ্য তথ্যভাণ্ডার।
+              </p>
+              
+              {/* Social Media Icons with circular layout and hover effects */}
+              <div className="flex items-center gap-2 pt-0.5">
+                <a
+                  href="https://www.facebook.com/share/1Cw5LUeDrT/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-7 h-7 rounded-full bg-white/5 border border-white/10 hover:bg-[#15803D] hover:border-emerald-400 text-white/80 hover:text-white transition-all duration-300 transform hover:scale-110 flex items-center justify-center cursor-pointer shadow-sm focus:outline-hidden"
+                  aria-label="Facebook"
+                >
+                  <Facebook className="h-3.5 w-3.5" />
+                </a>
+
+                <a
+                  href="https://whatsapp.com/channel/0029Vb81iAi1SWszw7skrt29"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-7 h-7 rounded-full bg-white/5 border border-white/10 hover:bg-[#15803D] hover:border-emerald-400 text-white/80 hover:text-white transition-all duration-300 transform hover:scale-110 flex items-center justify-center cursor-pointer shadow-sm focus:outline-hidden"
+                  aria-label="WhatsApp"
+                >
+                  <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.513 2.262 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.59-4.846c1.6.95 3.1 1.45 4.675 1.451 5.435 0 9.851-4.413 9.854-9.855.002-2.636-1.02-5.115-2.883-6.98C16.426 1.854 13.945 1.83 11.31 1.83a9.85 9.85 0 00-6.974 2.89C2.457 6.58 1.833 9.062 1.835 11.696c.001 1.636.438 3.23 1.266 4.634L2.14 21.8l5.525-1.451c-1.396-.757-1.396-.757.982-1.195z" />
+                  </svg>
+                </a>
+                
+                <a
+                  href="https://youtube.com/@habajabatech"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-7 h-7 rounded-full bg-white/5 border border-white/10 hover:bg-[#15803D] hover:border-emerald-400 text-white/80 hover:text-white transition-all duration-300 transform hover:scale-110 flex items-center justify-center cursor-pointer shadow-sm focus:outline-hidden"
+                  aria-label="YouTube"
+                >
+                  <Youtube className="h-3.5 w-3.5" />
+                </a>
+
+                <a
+                  href="https://www.instagram.com/habajabatech"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-7 h-7 rounded-full bg-white/5 border border-white/10 hover:bg-[#15803D] hover:border-emerald-400 text-white/80 hover:text-white transition-all duration-300 transform hover:scale-110 flex items-center justify-center cursor-pointer shadow-sm focus:outline-hidden"
+                  aria-label="Instagram"
+                >
+                  <Instagram className="h-3.5 w-3.5" />
+                </a>
+              </div>
+            </div>
+            
+            {/* Column 1: গুরুত্বপূর্ণ লিংক */}
+            <div className="col-span-4 sm:col-span-4 md:col-span-1 space-y-3">
+              <h4 className="font-extrabold text-[11px] sm:text-xs uppercase tracking-wider text-emerald-300 font-sans border-b border-white/10 pb-1.5">
+                গুরুত্বপূর্ণ লিংক
+              </h4>
+              <ul className="space-y-2 text-[10px] sm:text-[11px]">
+                <li>
+                  <button
+                    onClick={() => {
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
+                    className="text-white/70 hover:text-white transition-all duration-300 transform hover:translate-x-1 inline-block cursor-pointer outline-hidden font-medium"
+                  >
+                    হোম
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => {
+                      const el = document.getElementById("services-anchor");
+                      if (el) el.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className="text-white/70 hover:text-white transition-all duration-300 transform hover:translate-x-1 inline-block cursor-pointer outline-hidden font-medium"
+                  >
+                    সেবা সমূহ
+                  </button>
+                </li>
+              </ul>
+            </div>
+            
+            {/* Column 2: সহায়তা */}
+            <div className="col-span-4 sm:col-span-4 md:col-span-1 space-y-3">
+              <h4 className="font-extrabold text-[11px] sm:text-xs uppercase tracking-wider text-emerald-300 font-sans border-b border-white/10 pb-1.5">
+                সহায়তা
+              </h4>
+              <ul className="space-y-2 text-[10px] sm:text-[11px]">
+                <li>
+                  <button
+                    onClick={() => setActiveLegalModal("privacy")}
+                    className="text-white/70 hover:text-white transition-all duration-300 transform hover:translate-x-1 inline-block cursor-pointer outline-hidden font-medium"
+                  >
+                    গোপনীয়তা নীতি
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => setActiveLegalModal("terms")}
+                    className="text-white/70 hover:text-white transition-all duration-300 transform hover:translate-x-1 inline-block cursor-pointer outline-hidden font-medium"
+                  >
+                    শর্তাবলী
+                  </button>
+                </li>
+              </ul>
+            </div>
+            
+            {/* Column 3: আমাদের সম্পর্কে */}
+            <div className="col-span-4 sm:col-span-4 md:col-span-1 space-y-3">
+              <h4 className="font-extrabold text-[11px] sm:text-xs uppercase tracking-wider text-emerald-300 font-sans border-b border-white/10 pb-1.5">
+                আমাদের সম্পর্কে
+              </h4>
+              <ul className="space-y-2 text-[10px] sm:text-[11px]">
+                <li>
+                  <button
+                    onClick={() => setActiveLegalModal("disclaimer")}
+                    className="text-white/70 hover:text-white transition-all duration-300 transform hover:translate-x-1 inline-block cursor-pointer outline-hidden font-medium"
+                  >
+                    আমাদের সম্পর্কে
+                  </button>
+                </li>
+              </ul>
+            </div>
+            
           </div>
-          <p className="leading-relaxed text-slate-300 font-medium">
-            "বাংলার সেবা কোনো সরকারি ওয়েবসাইট নয়। আমরা শুধুমাত্র বিভিন্ন সরকারি পরিষেবা, প্রকল্প, চাকরি এবং স্কলারশিপ সংক্রান্ত অফিসিয়াল তথ্য ও লিংক একত্রে প্রদান করি। সকল আবেদন সংশ্লিষ্ট অফিসিয়াল ওয়েবসাইটে সম্পন্ন হয়।"
-          </p>
-          <p className="text-[10px] text-slate-400 font-mono pt-2 border-t border-white/5">
-            © 2026 বাংলার সেবা সিটিজেন গাইডস ট্রাস্ট। সর্বস্বত্ব সংরক্ষিত।
-          </p>
+        </div>
+        
+        {/* Bottom Footer Bar */}
+        <div className="w-full bg-[#021D16] border-t border-white/5 py-3 sm:py-0 sm:h-[50px] flex flex-col sm:flex-row items-center justify-between gap-1.5 sm:gap-4 px-6 md:px-12 text-[10px] sm:text-xs text-white/50 font-sans mt-2">
+          <span>
+            © 2026 সহজ সেবা | সর্বস্বত্ব সংরক্ষিত
+          </span>
+          <span className="font-extrabold text-emerald-400 hover:text-emerald-300 transition-colors duration-300 tracking-wide">
+            Design By HabaJaba Tech
+          </span>
+          <span className="flex items-center gap-1 font-semibold text-white/70">
+            Made with <span className="text-red-500 animate-pulse">❤️</span> for West Bengal
+          </span>
         </div>
       </footer>
 
@@ -2322,7 +2766,7 @@ export default function App() {
                       value={mobileNumber}
                       onChange={(e) => setMobileNumber(e.target.value.replace(/\D/g, "").slice(0, 10))}
                       placeholder="9876543210"
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-4 py-3 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500/10 text-slate-900 font-sans"
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-4 py-3 text-sm focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-orange-500/10 text-slate-900 font-sans"
                     />
                   </div>
                 </div>
@@ -2341,34 +2785,32 @@ export default function App() {
         </div>
       )}
 
-      {/* AI Bot floating window interface */}
-      <AiAssistant isOpen={isAiOpen} onClose={() => setIsAiOpen(false)} />
-
-      {/* MODAL: LEGAL, DISCLAIMER & PRIVACY DIALOG WINDOW */}
       {activeLegalModal && (
-        <div className="fixed inset-0 z-55 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in">
-          <div className="bg-white rounded-2xl w-full max-w-[650px] max-h-[85vh] overflow-hidden border border-orange-50 shadow-2xl flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/55 backdrop-blur-xs animate-fade-in font-sans">
+          <div className="bg-white rounded-2xl w-full max-w-[600px] max-h-[85vh] overflow-hidden border border-slate-100 shadow-2xl flex flex-col">
             {/* Modal Header */}
-            <div className="bg-gradient-to-r from-slate-800 to-slate-900 text-white p-5 flex items-center justify-between shrink-0">
+            <div className="bg-slate-900 text-white p-5 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2">
                 <Shield className="h-5 w-5 text-amber-400" />
-                <h3 className="font-extrabold text-base md:text-lg text-white">
-                  {activeLegalModal === "privacy" && "গোপনীয়তা নীতি (Privacy Policy)"}
+                <h3 className="font-extrabold text-sm md:text-base text-white">
+                  {activeLegalModal === "terms" && "আমাদের ব্যবহার বিধি ও শর্তাবলী"}
+                  {activeLegalModal === "disclaimer" && "সরকারি তথ্য অস্বীকৃতিপত্র (Disclaimer)"}
+                  {activeLegalModal === "privacy" && "ব্যক্তিগত গোপনীয়তা রক্ষা নীতি (Privacy Policy)"}
                 </h3>
               </div>
-              <button 
-                onClick={() => setActiveLegalModal(null)} 
-                className="text-white bg-white/10 hover:bg-white/20 rounded-lg p-1.5 transition-all cursor-pointer font-sans"
+              <button
+                onClick={() => setActiveLegalModal(null)}
+                className="text-white hover:bg-white/10 rounded-lg p-1.5 transition-colors cursor-pointer underline-none outline-none"
               >
-                <X className="h-4 w-4" />
+                <X className="h-5 w-5" />
               </button>
             </div>
 
             {/* Modal Body */}
-            <div className="p-6 overflow-y-auto flex-1 space-y-4">
+            <div className="p-6 space-y-6 overflow-y-auto shrink text-slate-705 leading-relaxed max-h-full">
               {activeLegalModal === "terms" && (
                 <div className="space-y-4 text-xs md:text-sm text-slate-650 leading-relaxed font-sans">
-                  <div className="bg-orange-50 border border-orange-100 p-4 rounded-xl text-xs text-orange-850 font-semibold leading-relaxed">
+                  <div className="bg-amber-50 border border-amber-100 p-4 rounded-xl text-xs text-amber-850 font-semibold leading-relaxed font-sans">
                     📝 ব্যবহারের পূর্বে আমাদের নিয়মাবলী ও শর্তসমূহ মনোযোগ দিয়ে দয়া করে পড়ে নিন।
                   </div>
                   <section className="space-y-2">
@@ -2454,13 +2896,19 @@ export default function App() {
 
       {/* MODAL: ADMIN PASSWORD VERIFICATION (ONLY ACCESSED BY TYPING "100") */}
       {showAdminPasswordModal && (
-        <div className="fixed inset-0 z-55 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in animate-duration-200">
-          <div className="bg-white rounded-2xl w-full max-w-[420px] overflow-hidden border border-orange-50 shadow-2xl flex flex-col">
+        <div className="fixed inset-0 z-55 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-fade-in animate-duration-200">
+          <div className="bg-white rounded-3xl w-full max-w-[420px] overflow-hidden border border-emerald-100/60 shadow-2xl flex flex-col transform transition-all scale-100">
             {/* Header */}
-            <div className="bg-gradient-to-r from-slate-850 to-slate-900 text-white p-5 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Shield className="h-5 w-5 text-amber-400" />
-                <h3 className="font-extrabold text-sm md:text-base text-white">অফিসিয়াল লগইন</h3>
+            <div className="bg-gradient-to-r from-emerald-700 via-green-700 to-emerald-800 text-white p-5.5 flex items-center justify-between relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl -mr-8 -mt-8" />
+              <div className="flex items-center gap-2.5 relative z-10 animate-fade-in">
+                <div className="p-1.5 bg-white/10 rounded-lg shrink-0">
+                  <Shield className="h-5 w-5 text-amber-350 animate-pulse" />
+                </div>
+                <div className="flex flex-col">
+                  <h3 className="font-black text-base text-white tracking-wide font-sans">অফিসিয়াল লগইন</h3>
+                  <span className="text-[10px] text-emerald-100 font-medium tracking-wider uppercase">Secure Access Port</span>
+                </div>
               </div>
               <button 
                 onClick={() => {
@@ -2468,39 +2916,43 @@ export default function App() {
                   setAdminPasswordError("");
                   setAdminPasswordInput("");
                 }} 
-                className="text-white bg-white/10 hover:bg-white/20 rounded-lg p-1.5 transition-all cursor-pointer"
+                className="text-white hover:text-emerald-100 bg-white/10 hover:bg-white/20 rounded-xl p-2 transition-all cursor-pointer relative z-10"
               >
-                <X className="h-4 w-4" />
+                <X className="h-4.5 w-4.5" />
               </button>
             </div>
 
             {/* Form */}
-            <form onSubmit={handleAdminPasswordSubmit} className="p-6 space-y-5">
+            <form onSubmit={handleAdminPasswordSubmit} className="p-6.5 space-y-5.5 bg-linear-to-b from-white via-white to-emerald-50/10">
               {/* Central padlock illustration */}
-              <div className="flex flex-col items-center justify-center space-y-2 pb-2">
-                <div className="p-4 bg-gradient-to-br from-orange-50 to-amber-100/60 rounded-full border border-orange-200/50 shadow-inner relative">
-                  <Lock className="h-8 w-8 text-bengali-orange animate-pulse" />
-                  <div className="absolute -top-1 -right-1 bg-green-500 rounded-full h-3 w-3 border-2 border-white"></div>
+              <div className="flex flex-col items-center justify-center space-y-2.5 pb-2">
+                <div className="p-5 bg-gradient-to-br from-emerald-500/10 to-green-500/5 rounded-full border border-emerald-500/15 shadow-inner relative">
+                  <div className="absolute inset-0 rounded-full bg-emerald-500/5 animate-ping opacity-75" />
+                  <Lock className="h-9 w-9 text-emerald-600 relative z-10 animate-pulse" />
+                  <div className="absolute top-0.5 right-0.5 bg-emerald-500 rounded-full h-3.5 w-3.5 border-4 border-white"></div>
                 </div>
-                <h4 className="font-extrabold text-[#1E3A5F] text-xs tracking-wider uppercase font-mono">
-                  SECURE STAFF ACCESS ONLY
-                </h4>
+                <div className="text-center">
+                  <h4 className="font-black text-emerald-800 text-xs tracking-widest uppercase font-sans">
+                    STAFF VERIFICATION SECURED
+                  </h4>
+                  <p className="text-[10px] text-slate-400 font-semibold mt-0.5 font-sans">Encryption Status: Active (TLS 1.3)</p>
+                </div>
               </div>
 
-              <p className="text-xs text-slate-500 font-semibold text-center leading-relaxed">
-                এই বিভাগটি শুধুমাত্র প্যানেল অ্যাডমিন ও আধিকারিকদের জন্য সংরক্ষিত। অনুগ্রহ করে প্রবেশের জন্য অ্যাক্সেস কোড লিখুন।
+              <p className="text-xs text-slate-600 font-bold text-center leading-relaxed font-sans">
+                এই সুরক্ষিত পোর্টালটি শুধুমাত্র সহজ সেবা প্যানেল অ্যাডমিন ও আধিকারিকদের ব্যবহারের জন্য সংরক্ষিত। প্রবেশ করতে সিকিউরিটি কোড দিন।
               </p>
 
               {adminPasswordError && (
-                <div className="bg-red-50 border border-red-200 p-3 rounded-xl text-xs text-red-650 font-bold leading-normal animate-shake flex items-center gap-1.5 justify-center">
-                  <span>⚠️</span> {adminPasswordError}
+                <div className="bg-red-50 border border-red-150 p-3 rounded-xl text-xs text-red-655 font-bold leading-normal animate-shake flex items-center gap-2 justify-center">
+                  <span className="shrink-0 text-red-500">🛑</span> 
+                  <span>{adminPasswordError}</span>
                 </div>
               )}
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 flex items-center justify-between">
-                  <span>ডিভাইস সিকিউরিটি কোড (পাসওয়ার্ড)</span>
-                  <span className="text-[10px] text-slate-400 font-medium font-sans">পাসওয়ার্ড: ১০০</span>
+              <div className="space-y-2">
+                <label className="text-xs font-black text-slate-700 block">
+                  ডিভাইস সিকিউরিটি পাসওয়ার্ড
                 </label>
                 <div className="relative">
                   <input
@@ -2508,13 +2960,13 @@ export default function App() {
                     value={adminPasswordInput}
                     onChange={(e) => setAdminPasswordInput(e.target.value)}
                     placeholder="অ্যাডমিন সিকিউর পাসওয়ার্ড লিখুন..."
-                    className="w-full pl-4 pr-10 py-3 text-sm border-2 border-slate-205 rounded-xl text-slate-850 font-semibold focus:outline-none focus:ring-4 focus:ring-orange-100/50 focus:border-[#E96A1F] transition-all bg-slate-50 hover:bg-slate-100/20"
+                    className="w-full pl-4 pr-11 py-3 text-sm border-2 border-slate-200 rounded-xl text-slate-800 font-bold focus:outline-hidden focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-655 transition-all bg-slate-50/60 hover:bg-slate-50/40"
                     autoFocus
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 transition-colors focus:outline-none cursor-pointer"
+                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-emerald-650 transition-colors focus:outline-hidden cursor-pointer"
                   >
                     {showPassword ? (
                       <EyeOff className="h-4.5 w-4.5 shrink-0" />
@@ -2526,7 +2978,7 @@ export default function App() {
               </div>
 
               {/* Action buttons */}
-              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+              <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-100/70">
                 <button
                   type="button"
                   onClick={() => {
@@ -2535,15 +2987,16 @@ export default function App() {
                     setAdminPasswordInput("");
                     setShowPassword(false);
                   }}
-                  className="px-4 py-2.5 text-xs font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-all cursor-pointer"
+                  className="px-4.5 py-2.5 text-xs font-black text-slate-500 hover:text-red-650 hover:bg-red-50 rounded-xl transition-all cursor-pointer border border-transparent hover:border-red-100 font-sans"
                 >
                   বাতিল
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 text-xs font-black text-white bg-gradient-to-r from-slate-800 to-slate-900 hover:from-slate-900 hover:to-black rounded-xl transition-all cursor-pointer shadow-md transform hover:-translate-y-0.5 active:translate-y-0"
+                  className="px-5.5 py-2.5 text-xs font-black text-white bg-gradient-to-r from-emerald-600 to-green-700 hover:from-emerald-700 hover:to-green-800 rounded-xl transition-all cursor-pointer shadow-md shadow-emerald-600/10 hover:shadow-lg hover:shadow-emerald-600/15 transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-1.5 font-sans"
                 >
-                  প্রবেশ করুন →
+                  <span>প্রবেশ করুন</span>
+                  <ArrowUpRight className="h-3.5 w-3.5 stroke-[2.5]" />
                 </button>
               </div>
             </form>

@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { Scheme, Job, Scholarship, ServiceItem, AppUpdate, CategoryItem } from "../data";
+import { Scheme, Job, Scholarship, ServiceItem, AppUpdate, CategoryItem, Suggestion } from "../data";
 import { 
   Plus, 
   Trash, 
@@ -27,7 +27,8 @@ import {
   Globe,
   X,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  MessageSquare
 } from "lucide-react";
 
 interface AdminPanelProps {
@@ -62,6 +63,9 @@ interface AdminPanelProps {
   firebaseStatus?: any;
   settings: { geminiApiKey: string };
   onSaveSettings: (newSettings: { geminiApiKey: string }) => Promise<boolean>;
+  suggestions?: Suggestion[];
+  onSaveSuggestion?: (suggestion: Suggestion) => Promise<void>;
+  onDeleteSuggestion?: (id: string) => Promise<void>;
 }
 
 export default function AdminPanel({
@@ -90,7 +94,10 @@ export default function AdminPanel({
   triggerPushNotification,
   firebaseStatus,
   settings,
-  onSaveSettings
+  onSaveSettings,
+  suggestions = [],
+  onSaveSuggestion = async () => {},
+  onDeleteSuggestion = async () => {}
 }: AdminPanelProps) {
   const [activeTab, setActiveTab] = useState<
     | "analytics"
@@ -103,6 +110,7 @@ export default function AdminPanel({
     | "land"
     | "cyber_cafe"
     | "categories"
+    | "suggestions"
     | "settings"
   >("analytics");
   const [notificationMsg, setNotificationMsg] = useState("");
@@ -753,20 +761,37 @@ export default function AdminPanel({
     showNotification("পোর্টাল জুড়ে ব্রডকাস্ট पुश ঘোষণা তাৎক্ষণিক সফল!");
   };
 
+  const tabItems = [
+    { id: "analytics", label: "সার্বিক অ্যানালিটিক্স", icon: PieChart, count: null },
+    { id: "welfare", label: "সরকারি প্রকল্প", icon: Layers, count: schemes.length },
+    { id: "jobs", label: "সরকারি চাকরি", icon: Briefcase, count: jobs.length },
+    { id: "scholarships", label: "স্কলারশিপ", icon: GraduationCap, count: scholarships.length },
+    { id: "identity", label: "পরিচয় ও কার্ড", icon: FileCheck, count: services.filter(s => s.category === "identity" || s.category === "aadhaar_pan").length },
+    { id: "utility", label: "শংসাপত্র", icon: FileText, count: services.filter(s => s.category === "utility" || s.category === "certificates").length },
+    { id: "health", label: "হেলথ ও বিমা", icon: HeartPulse, count: services.filter(s => s.category === "health").length },
+    { id: "land", label: "জমি ও পরচা", icon: FileCheck, count: services.filter(s => s.category === "land").length },
+    { id: "cyber_cafe", label: "সাইবার ক্যাফে", icon: Laptop, count: services.filter(s => s.category === "cyber_cafe").length },
+    { id: "categories", label: "বিভাগ পরিচালনা", icon: Grid, count: categories.length },
+    { id: "suggestions", label: "সাজেশন ও অভিযোগ", icon: MessageSquare, count: suggestions.length },
+    { id: "settings", label: "এআই সিস্টেম সেটিংস", icon: Settings, count: null }
+  ];
+
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm" id="admin-panel-component">
+    <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xl" id="admin-panel-component">
       {/* Admin Title */}
-      <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Settings className="h-5 w-5 text-bengali-orange animate-spin" />
+      <div className="bg-slate-900 text-white px-6 py-5 flex items-center justify-between border-b border-slate-800">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-gradient-to-tr from-bengali-orange to-amber-500 rounded-xl shadow-md">
+            <Settings className="h-5 w-5 text-white animate-spin-slow" />
+          </div>
           <div>
-            <h2 className="font-semibold text-lg text-white">অ্যাডমিন কন্ট্রোল পোর্টাল</h2>
-            <p className="text-xs text-slate-400">রিয়েল-টাইম লাইভ ফায়ারবেস ডেটাবেস সিঙ্ক্রোনাইজেশন প্যানেল</p>
+            <h2 className="font-extrabold text-base md:text-lg text-white font-sans tracking-wide">অ্যাডমিন কন্ট্রোল পোর্টাল</h2>
+            <p className="text-[11px] text-slate-400 font-medium">রিয়েল-টাইম লাইভ ফায়ারবেস ডেটাবেস সিঙ্ক্রোনাইজেশন প্যানেল</p>
           </div>
         </div>
         <button
           onClick={onClose}
-          className="text-xs px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 hover:text-white rounded-lg text-slate-300 transition-colors font-bold cursor-pointer"
+          className="text-xs px-4 py-2 bg-slate-800 hover:bg-slate-700 hover:text-white rounded-xl text-slate-300 transition-colors font-bold cursor-pointer border border-slate-700/60"
         >
           বন্ধ করুন
         </button>
@@ -779,82 +804,156 @@ export default function AdminPanel({
         </div>
       )}
 
-      {/* Tabs list */}
-      <div className="relative group border-b border-slate-100 bg-slate-50/50 flex items-center">
-        {/* Left scroll button for desktop */}
-        <button
-          onClick={() => scrollTabs("left")}
-          className="absolute left-0 top-0 bottom-0 z-10 bg-slate-100/95 hover:bg-slate-200 text-slate-700 w-8 flex items-center justify-center border-r border-slate-200/60 shadow-xs cursor-pointer opacity-70 hover:opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200"
-          title="বামে স্ক্রোল করুন"
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </button>
-
-        <div 
-          ref={tabsContainerRef}
-          className="flex-1 flex items-center overflow-x-auto scrollbar-none whitespace-nowrap select-none px-8 scroll-smooth"
-        >
-          {[
-            { id: "analytics", label: "সার্বিক অ্যানালিটিক্স", icon: PieChart, count: null },
-            { id: "welfare", label: "সরকারি প্রকল্প", icon: Layers, count: schemes.length },
-            { id: "jobs", label: "সরকারি চাকরি", icon: Briefcase, count: jobs.length },
-            { id: "scholarships", label: "স্কলারশিপ", icon: GraduationCap, count: scholarships.length },
-            { id: "identity", label: "পরিচয় ও কার্ড", icon: FileCheck, count: services.filter(s => s.category === "identity" || s.category === "aadhaar_pan").length },
-            { id: "utility", label: "শংসাপত্র", icon: FileText, count: services.filter(s => s.category === "utility" || s.category === "certificates").length },
-            { id: "health", label: "হেলথ ও বিমা", icon: HeartPulse, count: services.filter(s => s.category === "health").length },
-            { id: "land", label: "জমি ও পরচা", icon: FileCheck, count: services.filter(s => s.category === "land").length },
-            { id: "cyber_cafe", label: "সাইবার ক্যাফে", icon: Laptop, count: services.filter(s => s.category === "cyber_cafe").length },
-            { id: "categories", label: "বিভাগ পরিচালনা", icon: Grid, count: categories.length },
-            { id: "settings", label: "এআই সিস্টেম সেটিংস", icon: Settings, count: null }
-          ].map((tab) => {
-            const IconComponent = tab.icon;
-            const isSelected = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => {
-                  setActiveTab(tab.id as any);
-                  // Also reset active edit forms to prevent confusion across tabs
+      {/* Main Responsive Split Layout */}
+      <div className="flex flex-col md:flex-row min-h-[680px]">
+        
+        {/* Adaptive Sidebar Controller */}
+        <aside className="w-full md:w-[270px] shrink-0 bg-[#F8FAFC] border-b md:border-b-0 md:border-r border-slate-205 flex flex-col justify-between font-sans">
+          
+          {/* MOBILE TABS MENU */}
+          <div className="block md:hidden p-4 border-b border-slate-200 bg-white">
+            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2 font-sans">
+              অ্যাডমিন সেকশন নেভিগেশন (পছন্দ করুন)
+            </label>
+            <div className="relative">
+              <select
+                value={activeTab}
+                onChange={(e) => {
+                  const val = e.target.value as any;
+                  setActiveTab(val);
                   cancelSchemeEdit();
                   cancelJobEdit();
                   cancelScholarshipEdit();
                   cancelServiceEdit();
                   cancelCategoryEdit();
-                  if (["identity", "utility", "health", "land", "cyber_cafe"].includes(tab.id)) {
-                    setServiceCategory(tab.id as any);
+                  if (["identity", "utility", "health", "land", "cyber_cafe"].includes(val)) {
+                    setServiceCategory(val as any);
                   }
                 }}
-                className={`px-3 md:px-4 py-2.5 text-xs font-bold border-b-2 transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
-                  isSelected
-                    ? "border-bengali-orange text-[#EA580C] bg-white font-black"
-                    : "border-transparent text-slate-600 hover:text-slate-800 hover:bg-slate-50"
-                }`}
+                className="w-full px-4 py-3 text-xs font-black bg-slate-900 border border-slate-800 text-white rounded-xl outline-none focus:ring-2 focus:ring-bengali-orange cursor-pointer appearance-none shadow-sm font-sans"
               >
-                <IconComponent className="h-3.5 w-3.5" />
-                <span>{tab.label}</span>
-                {tab.count !== null && (
-                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold font-mono ${
-                    isSelected ? "bg-orange-100 text-[#EA580C]" : "bg-slate-200 text-slate-650"
-                  }`}>
-                    {tab.count}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
+                {tabItems.map((tab) => (
+                  <option key={tab.id} value={tab.id} className="text-slate-800 bg-white font-semibold">
+                    {tab.label} {tab.count !== null ? `(${tab.count})` : ""}
+                  </option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-white">
+                <ChevronRight className="h-4 w-4 rotate-90" />
+              </div>
+            </div>
 
-        {/* Right scroll button for desktop */}
-        <button
-          onClick={() => scrollTabs("right")}
-          className="absolute right-0 top-0 bottom-0 z-10 bg-slate-100/95 hover:bg-slate-200 text-slate-700 w-8 flex items-center justify-center border-l border-slate-200/60 shadow-xs cursor-pointer opacity-70 hover:opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200"
-          title="ডানে স্ক্রোল করুন"
-        >
-          <ChevronRight className="h-4 w-4" />
-        </button>
-      </div>
+            {/* Sliding Pillbar on Mobile */}
+            <div className="flex items-center gap-2 overflow-x-auto scrollbar-none mt-3 pb-1">
+              {tabItems.map((tab) => {
+                const IconComponent = tab.icon;
+                const isSelected = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => {
+                      setActiveTab(tab.id as any);
+                      cancelSchemeEdit();
+                      cancelJobEdit();
+                      cancelScholarshipEdit();
+                      cancelServiceEdit();
+                      cancelCategoryEdit();
+                      if (["identity", "utility", "health", "land", "cyber_cafe"].includes(tab.id)) {
+                        setServiceCategory(tab.id as any);
+                      }
+                    }}
+                    className={`flex items-center gap-1.5 shrink-0 px-3.5 py-1.8 rounded-full text-[11px] font-black tracking-wide border transition-all cursor-pointer shadow-xs ${
+                      isSelected
+                        ? "bg-bengali-orange border-orange-600 text-white font-black"
+                        : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200"
+                    }`}
+                  >
+                    <IconComponent className="h-3.5 w-3.5" />
+                    <span>{tab.label}</span>
+                    {tab.count !== null && (
+                      <span className={`text-[9.5px] px-1.5 py-0.2 rounded-full font-bold font-mono ${
+                        isSelected ? "bg-white/20 text-white" : "bg-slate-200 text-slate-605"
+                      }`}>
+                        {tab.count}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
-      <div className="p-6">
+          {/* DESKTOP SIDEBAR MENU */}
+          <div className="hidden md:flex flex-col flex-1 p-5 space-y-1.5">
+            <div className="px-3.5 pb-2 text-[10px] font-black text-slate-400 uppercase tracking-widest font-sans">
+              ম্যানেজমেন্ট ক্যাটাগরি
+            </div>
+            
+            <div className="space-y-1">
+              {tabItems.map((tab) => {
+                const IconComponent = tab.icon;
+                const isSelected = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => {
+                      setActiveTab(tab.id as any);
+                      cancelSchemeEdit();
+                      cancelJobEdit();
+                      cancelScholarshipEdit();
+                      cancelServiceEdit();
+                      cancelCategoryEdit();
+                      if (["identity", "utility", "health", "land", "cyber_cafe"].includes(tab.id)) {
+                        setServiceCategory(tab.id as any);
+                      }
+                    }}
+                    className={`w-full flex items-center justify-between px-4 py-3.5 rounded-2xl text-xs font-black transition-all duration-155 cursor-pointer group border ${
+                      isSelected
+                        ? "bg-gradient-to-r from-orange-500 to-amber-550 border-orange-500 text-white shadow-md shadow-orange-500/10 hover:shadow-lg hover:shadow-orange-500/15"
+                        : "bg-transparent text-slate-705 hover:text-slate-905 hover:bg-slate-100 border-transparent hover:border-slate-200/50"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <IconComponent className={`h-4.5 w-4.5 shrink-0 transition-colors ${
+                        isSelected ? "text-white" : "text-slate-405 group-hover:text-slate-600"
+                      }`} />
+                      <span className="font-sans text-xs translate-y-[-0.5px] leading-none shrink-0 truncate max-w-[140px]">{tab.label}</span>
+                    </div>
+                    {tab.count !== null && (
+                      <span className={`text-[10px] font-extrabold font-mono px-2 py-0.5 rounded-md ${
+                        isSelected ? "bg-white/25 text-white" : "bg-slate-200 text-slate-600"
+                      }`}>
+                        {tab.count}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* DESKTOP SIDEBAR FOOTER METRICS */}
+          <div className="hidden md:block p-5 border-t border-slate-200/60 bg-[#F1F5F9]/40 mt-auto">
+            <div className="bg-slate-900 text-slate-100 rounded-2xl p-4 text-xs shadow-md space-y-1.5 border border-slate-800">
+              <div className="text-[9px] font-black text-amber-400 tracking-wider font-sans uppercase">
+                লাইভ ডেটা সেন্টার
+              </div>
+              <div className="font-bold flex items-center gap-1.5 text-white text-[11px]">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                ফায়ারবেস ক্লাউড কানেক্টেড
+              </div>
+              <p className="text-[10px] text-slate-400 font-sans leading-relaxed pt-1 font-semibold">
+                প্যানেলে যেকোনো পরিবর্তনের সাথে সাথে সমস্ত নাগরিকের অ্যাপে ডেটা রিয়েল-টাইমে আপডেট হয়ে যাবে।
+              </p>
+            </div>
+          </div>
+        </aside>
+
+        {/* WORKSPACE SECTION */}
+        <div className="flex-1 p-4 md:p-8 bg-white min-w-0">
         {/* TAB 1: ANALYTICS */}
         {activeTab === "analytics" && (
           <div className="space-y-6">
@@ -2085,6 +2184,221 @@ export default function AdminPanel({
           </div>
         )}
 
+        {/* TAB 8.5: SUGGESTIONS & COMPLAINTS */}
+        {activeTab === "suggestions" && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8 space-y-6">
+              <div className="border-b border-slate-100 pb-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-sm md:text-base font-extrabold text-slate-800 flex items-center gap-2">
+                    <MessageSquare className="h-5 w-5 text-bengali-orange" />
+                    নাগরিক সাজেশন ও অভিযোগ ড্যাশবোর্ড (Suggestions & Feedback)
+                  </h3>
+                  <p className="text-[11px] text-slate-500 font-medium mt-1">
+                    সহজ সেবা অ্যাপ্লিকেশনে নাগরিকরা যেসব সমস্যা বা নতুন ফিচার অনুরোধ করেছেন সেগুলো এখানে পর্যালোচনা করুন এবং অ্যাকশন রেকর্ড করুন।
+                  </p>
+                </div>
+                
+                {/* Stats recap row */}
+                <div className="flex gap-2">
+                  <div className="bg-orange-50 border border-orange-100 px-3 py-1.5 rounded-lg text-center">
+                    <div className="text-[10px] text-orange-600 font-extrabold">মোট মতামত</div>
+                    <div className="text-sm font-black text-[#EA580C]">{suggestions.length}</div>
+                  </div>
+                  <div className="bg-amber-50 border border-amber-100 px-3 py-1.5 rounded-lg text-center">
+                    <div className="text-[10px] text-amber-700 font-extrabold">অপেক্ষমান</div>
+                    <div className="text-sm font-black text-amber-600">
+                      {suggestions.filter(s => s.status === "pending" || !s.status).length}
+                    </div>
+                  </div>
+                  <div className="bg-emerald-50 border border-emerald-100 px-3 py-1.5 rounded-lg text-center">
+                    <div className="text-[10px] text-emerald-700 font-extrabold">সমাধান করা</div>
+                    <div className="text-sm font-black text-emerald-600">
+                      {suggestions.filter(s => s.status === "resolved").length}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {suggestions.length === 0 ? (
+                <div className="text-center py-12 px-4 bg-slate-50 rounded-xl border border-dashed border-slate-200/80">
+                  <MessageSquare className="h-10 w-10 text-slate-300 mx-auto mb-3" />
+                  <p className="text-xs font-bold text-slate-600">বর্তমানে কোনো সাজেশন বা অভিযোগ জমা পড়েনি।</p>
+                  <p className="text-[11px] text-slate-400 mt-1">গ্রাহকরা হোমে সাজেশন বক্সে মন্তব্য জমা দিলে এখানে রিয়েল-টাইমে তা চলে আসবে।</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {suggestions.map((item) => {
+                    return (
+                      <div 
+                        key={item.id} 
+                        className={`p-5 rounded-xl border transition-all ${
+                          item.status === "resolved" 
+                            ? "border-emerald-100 bg-emerald-50/10" 
+                            : item.status === "ignored"
+                            ? "border-slate-200 bg-slate-50/40 opacity-70"
+                            : "border-slate-200 bg-white shadow-xs"
+                        }`}
+                      >
+                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-3">
+                          <div className="space-y-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              {/* Type status badge */}
+                              {item.type === "difficulty" ? (
+                                <span className="bg-red-50 text-red-700 border border-red-100 text-[10px] px-2.5 py-0.5 rounded-full font-bold">
+                                  সমস্যা / অসুবিধা
+                                </span>
+                              ) : item.type === "feature" ? (
+                                <span className="bg-indigo-50 text-indigo-700 border border-indigo-100 text-[10px] px-2.5 py-0.5 rounded-full font-bold">
+                                  নতুন ফিচার অনুরোধ
+                                </span>
+                              ) : (
+                                <span className="bg-slate-100 text-slate-700 border border-slate-200 text-[10px] px-2.5 py-0.5 rounded-full font-bold">
+                                  অন্যান্য মতামত
+                                </span>
+                              )}
+
+                              {/* Action status badge */}
+                              {item.status === "resolved" ? (
+                                <span className="bg-emerald-50 text-emerald-700 border border-emerald-100 text-[10px] px-2.5 py-0.5 rounded-full font-extrabold flex items-center gap-1">
+                                  <span className="h-1.5 w-1.5 bg-emerald-500 rounded-full"></span>
+                                  সমাধান করা (Resolved)
+                                </span>
+                              ) : item.status === "ignored" ? (
+                                <span className="bg-slate-200 text-slate-650 border border-slate-300 text-[10px] px-2.5 py-0.5 rounded-full font-bold">
+                                  বাতিল করা (Ignored)
+                                </span>
+                              ) : (
+                                <span className="bg-amber-50 text-amber-800 border border-amber-200 text-[10px] px-2.5 py-0.5 rounded-full font-extrabold flex items-center gap-1">
+                                  <span className="h-1.5 w-1.5 bg-amber-500 rounded-full animate-pulse"></span>
+                                  পর্যালোচনা চলছে (Pending)
+                                </span>
+                              )}
+                            </div>
+                            
+                            <h4 className="text-xs font-black text-slate-800">
+                              প্রেরক: {item.name || "অজ্ঞাত নাগরিক"}
+                              {item.mobile && <span className="text-slate-400 font-semibold font-mono text-[10px] ml-2">({item.mobile})</span>}
+                            </h4>
+                          </div>
+
+                          <span className="text-[10px] text-slate-400 font-semibold font-mono sm:text-right">
+                            {item.created_at ? new Date(item.created_at).toLocaleString("bn-BD") : "কিছুক্ষণ আগে"}
+                          </span>
+                        </div>
+
+                        {/* Suggestion Text */}
+                        <div className="bg-slate-50 rounded-lg p-3.5 border border-slate-100 text-xs font-semibold text-slate-700 leading-relaxed break-words">
+                          {item.text}
+                        </div>
+
+                        {/* Admin responses and notes section */}
+                        <div className="mt-4 pt-4 border-t border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                          {/* Notes field */}
+                          <div className="flex-1 flex items-center gap-2 max-w-xl">
+                            <span className="text-[10px] font-extrabold text-slate-500 whitespace-nowrap">অ্যাডমিন নোট:</span>
+                            <input
+                              type="text"
+                              value={item.adminNotes || ""}
+                              placeholder="এই বিষয়ে আপনার পদক্ষেপ লিখুন..."
+                              onChange={async (e) => {
+                                const val = e.target.value;
+                                await onSaveSuggestion({
+                                  ...item,
+                                  adminNotes: val
+                                });
+                              }}
+                              className="w-full text-xs font-semibold border-b border-dashed border-slate-300 hover:border-slate-400 focus:border-bengali-orange focus:outline-none bg-transparent py-0.5 px-1 text-slate-700"
+                            />
+                          </div>
+
+                          {/* Action toggle buttons */}
+                          <div className="flex items-center gap-2 shrink-0">
+                            {item.status !== "resolved" && (
+                              <button
+                                onClick={async () => {
+                                  await onSaveSuggestion({
+                                    ...item,
+                                    status: "resolved"
+                                  });
+                                  showNotification("মতামত বা সমাধান হিসেবে চিহ্নিত করা হয়েছে!");
+                                }}
+                                className="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-extrabold border border-emerald-200 px-3 py-1.5 rounded-lg text-[11px] transition-colors cursor-pointer flex items-center gap-1"
+                              >
+                                সমাধান করা
+                              </button>
+                            )}
+
+                            {item.status !== "ignored" && (
+                              <button
+                                onClick={async () => {
+                                  await onSaveSuggestion({
+                                    ...item,
+                                    status: "ignored"
+                                  });
+                                  showNotification("অভিযোগ বাতিল তালিকায় যুক্ত করা হয়েছে।");
+                                }}
+                                className="bg-slate-100 hover:bg-slate-200 text-slate-650 font-bold border border-slate-200 px-3 py-1.5 rounded-lg text-[11px] transition-colors cursor-pointer"
+                              >
+                                এড়িয়ে যান
+                              </button>
+                            )}
+
+                            {item.status && item.status !== "pending" && (
+                              <button
+                                onClick={async () => {
+                                  await onSaveSuggestion({
+                                    ...item,
+                                    status: "pending"
+                                  });
+                                  showNotification("রিভিউতে ফেরত নেওয়া হয়েছে।");
+                                }}
+                                className="bg-amber-50 hover:bg-amber-100 text-amber-700 font-semibold border border-amber-200 px-3 py-1.5 rounded-lg text-[11px] transition-colors cursor-pointer"
+                              >
+                                পেন্ডিং করুন
+                              </button>
+                            )}
+
+                            <button
+                              onClick={async () => {
+                                if (deleteConfirmId === item.id && deleteConfirmType === "suggestion") {
+                                  await onDeleteSuggestion(item.id);
+                                  showNotification("মতামত মুছে ফেলা হয়েছে।");
+                                  setDeleteConfirmId(null);
+                                  setDeleteConfirmType(null);
+                                } else {
+                                  setDeleteConfirmId(item.id);
+                                  setDeleteConfirmType("suggestion");
+                                  setTimeout(() => {
+                                    setDeleteConfirmId(null);
+                                    setDeleteConfirmType(null);
+                                  }, 5000);
+                                }
+                              }}
+                              className={`font-black border p-1.5 rounded-lg text-xs transition-colors cursor-pointer flex items-center justify-center gap-1 ${
+                                deleteConfirmId === item.id && deleteConfirmType === "suggestion"
+                                  ? "bg-red-600 border-red-700 text-white px-2.5 py-1"
+                                  : "bg-red-50 hover:bg-red-100 text-red-650 border-red-200"
+                              }`}
+                              title={deleteConfirmId === item.id && deleteConfirmType === "suggestion" ? "নিশ্চিত করতে পুনরায় ক্লিক করুন" : "মুছে ফেলুন"}
+                            >
+                              {deleteConfirmId === item.id && deleteConfirmType === "suggestion" ? (
+                                "নিশ্চিত?"
+                              ) : (
+                                <Trash2 className="h-3.5 w-3.5" />
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* TAB 9: AI SETTINGS PLAN */}
         {activeTab === "settings" && (
           <div className="space-y-6 max-w-4xl">
@@ -2176,6 +2490,7 @@ export default function AdminPanel({
             </div>
           </div>
         )}
+        </div>
       </div>
     </div>
   );

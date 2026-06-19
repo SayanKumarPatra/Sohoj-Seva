@@ -1,11 +1,10 @@
 {
-  "projectId": "banglar-saba-594b2",
+  "projectId":"banglar-saba-594b2",
   "appId": "1:66385129504:web:6e3ca7c65f054f7bcecc45",
   "apiKey": "AIzaSyDW-NGlJat-HedDbc23TbpU5jSAUjYWbdY",
   "authDomain": "banglar-saba-594b2.firebaseapp.com",
-  "databaseURL": "https://banglar-saba-594b2-default-rtdb.firebaseio.com",
-  "firestoreDatabaseId": "(default)",
+  "firestoreDatabaseId": "https://banglar-saba-594b2-default-rtdb.firebaseio.com",
   "storageBucket": "banglar-saba-594b2.firebasestorage.app",
-  "messagingSenderId": "66385129504",
+  "messagingSenderId":"66385129504",
   "measurementId": "G-8QR4PKZP4N"
 }

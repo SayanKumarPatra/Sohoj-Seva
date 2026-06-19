@@ -21,7 +21,10 @@ import {
   upsertCategory,
   removeCategory,
   getSystemSettings,
-  saveSystemSettings
+  saveSystemSettings,
+  getSuggestions,
+  upsertSuggestion,
+  removeSuggestion
 } from "./src/lib/firebase-server.js";
 
 // Load environment variables
@@ -197,6 +200,34 @@ app.get("/api/settings", async (req, res) => {
 app.post("/api/settings", async (req, res) => {
   try {
     await saveSystemSettings(req.body);
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Suggestions Endpoints
+app.get("/api/suggestions", async (req, res) => {
+  try {
+    const data = await getSuggestions();
+    res.json(data);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post("/api/suggestions", async (req, res) => {
+  try {
+    await upsertSuggestion(req.body);
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete("/api/suggestions/:id", async (req, res) => {
+  try {
+    await removeSuggestion(req.params.id);
     res.json({ success: true });
   } catch (err: any) {
     res.status(500).json({ error: err.message });

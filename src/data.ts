@@ -75,6 +75,17 @@ export interface AppUpdate {
   url?: string;
 }
 
+export interface Suggestion {
+  id: string;
+  name?: string;
+  mobile?: string;
+  type: "difficulty" | "feature" | "other" | string;
+  text: string;
+  created_at: string;
+  status: "pending" | "resolved" | "ignored" | string;
+  adminNotes?: string;
+}
+
 export const INITIAL_SCHEMES: Scheme[] = [
   {
     id: "s1",

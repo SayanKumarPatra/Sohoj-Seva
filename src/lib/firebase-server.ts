@@ -19,7 +19,8 @@ import {
   INITIAL_SCHEMES, 
   INITIAL_JOBS, 
   INITIAL_SCHOLARSHIPS, 
-  SERVICES_DATA 
+  SERVICES_DATA,
+  Suggestion
 } from "../data.ts";
 
 // Read and parse firebase config from workspace
@@ -37,13 +38,21 @@ const isPlaceholder = !firebaseConfig ||
   !firebaseConfig.projectId || 
   firebaseConfig.projectId === "" ||
   firebaseConfig.projectId === "YOUR_PROJECT_ID" ||
-  firebaseConfig.apiKey === "YOUR_API_KEY";
+  firebaseConfig.projectId.includes("remixed") ||
+  firebaseConfig.apiKey === "YOUR_API_KEY" ||
+  firebaseConfig.apiKey.includes("remixed");
 
 let db: any = null;
 let rtdb: any = null;
 
 if (!isPlaceholder && firebaseConfig) {
   try {
+    // Treat the firestoreDatabaseId as databaseURL if it is an RTDB URL pattern
+    const isRTDBUrl = (url: string) => url && (url.includes("firebaseio.com") || url.startsWith("http://") || url.startsWith("https://"));
+    if (firebaseConfig.firestoreDatabaseId && isRTDBUrl(firebaseConfig.firestoreDatabaseId)) {
+      firebaseConfig.databaseURL = firebaseConfig.firestoreDatabaseId;
+    }
+
     const app = initializeApp(firebaseConfig);
     
     // Initialize Realtime Database using the provided databaseURL
@@ -98,6 +107,7 @@ const localMemoryStore = {
   services: [...SERVICES_DATA] as ServiceItem[],
   categories: [...DEFAULT_CATEGORIES] as CategoryItem[],
   settings: { geminiApiKey: "" } as SystemSettings,
+  suggestions: [] as Suggestion[],
 };
 
 function saveLocalStore() {
@@ -119,6 +129,7 @@ function loadLocalStore() {
       if (parsed.services) localMemoryStore.services = parsed.services;
       if (parsed.categories) localMemoryStore.categories = parsed.categories;
       if (parsed.settings) localMemoryStore.settings = parsed.settings;
+      if (parsed.suggestions) localMemoryStore.suggestions = parsed.suggestions;
       console.log("[Data Store] Loaded persistent local store from disk:", DATA_STORE_PATH);
     } else {
       saveLocalStore();
@@ -1040,6 +1051,99 @@ export async function removeCategory(id: string): Promise<void> {
       await deleteDoc(doc(db, "categories", id));
     } catch (err) {
       console.error(`[Firebase Firestore] Error deleting category ${id}:`, err);
+    }
+  }
+}
+
+export async function getSuggestions(): Promise<Suggestion[]> {
+  if (isPlaceholder) {
+    return localMemoryStore.suggestions || [];
+  }
+
+  if (rtdb) {
+    try {
+      const snapshot = await rtdbGet(ref(rtdb, "suggestions"));
+      if (snapshot.exists()) {
+        const val = snapshot.val();
+        const list = Array.isArray(val) 
+          ? val.filter(Boolean) 
+          : Object.keys(val).map(key => val[key]);
+        return list as Suggestion[];
+      }
+      return [];
+    } catch (err) {
+      console.error("[Firebase RTDB] Error in getSuggestions:", err);
+    }
+  }
+
+  if (db) {
+    try {
+      const colRef = collection(db, "suggestions");
+      const qSnapshot = await getDocs(colRef);
+      const list: Suggestion[] = [];
+      qSnapshot.forEach((doc) => {
+        list.push(doc.data() as Suggestion);
+      });
+      return list;
+    } catch (err) {
+      console.error("[Firebase Firestore] Error in getSuggestions:", err);
+    }
+  }
+
+  return localMemoryStore.suggestions || [];
+}
+
+export async function upsertSuggestion(suggestion: Suggestion): Promise<void> {
+  if (!localMemoryStore.suggestions) {
+    localMemoryStore.suggestions = [];
+  }
+  const idx = localMemoryStore.suggestions.findIndex(s => s.id === suggestion.id);
+  if (idx !== -1) {
+    localMemoryStore.suggestions[idx] = suggestion;
+  } else {
+    localMemoryStore.suggestions.unshift(suggestion);
+  }
+  saveLocalStore();
+
+  if (isPlaceholder) return;
+
+  if (rtdb) {
+    try {
+      await rtdbSet(ref(rtdb, `suggestions/${suggestion.id}`), suggestion);
+    } catch (err) {
+      console.error("[Firebase RTDB] Error upserting suggestion:", err);
+    }
+  }
+  
+  if (db) {
+    try {
+      await setDoc(doc(db, "suggestions", suggestion.id), suggestion);
+    } catch (err) {
+      console.error("[Firebase Firestore] Error upserting suggestion:", err);
+    }
+  }
+}
+
+export async function removeSuggestion(id: string): Promise<void> {
+  if (localMemoryStore.suggestions) {
+    localMemoryStore.suggestions = localMemoryStore.suggestions.filter(s => s.id !== id);
+  }
+  saveLocalStore();
+  if (isPlaceholder) return;
+
+  if (rtdb) {
+    try {
+      await rtdbRemove(ref(rtdb, `suggestions/${id}`));
+    } catch (err) {
+      console.error(`[Firebase RTDB] Error deleting suggestion ${id}:`, err);
+    }
+  }
+  
+  if (db) {
+    try {
+      await deleteDoc(doc(db, "suggestions", id));
+    } catch (err) {
+      console.error(`[Firebase Firestore] Error deleting suggestion ${id}:`, err);
     }
   }
 }

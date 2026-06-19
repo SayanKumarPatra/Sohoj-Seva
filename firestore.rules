@@ -26,6 +26,10 @@ service cloud.firestore {
       allow write: if true;
     }
 
+    match /suggestions/{suggestionId} {
+      allow read, write: if true;
+    }
+
     match /categories/{catId} {
       allow read: if true;
       allow write: if true;
