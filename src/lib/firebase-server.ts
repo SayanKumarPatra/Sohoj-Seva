@@ -93,6 +93,7 @@ export const DEFAULT_CATEGORIES: CategoryItem[] = [
 
 export interface SystemSettings {
   geminiApiKey: string;
+  heroBannerUrl?: string;
 }
 
 import { writeFileSync, existsSync } from "fs";

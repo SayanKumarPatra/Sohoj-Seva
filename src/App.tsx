@@ -296,6 +296,7 @@ const getCategoryIcon = (iconName: string) => {
     case "Globe": return Globe;
     case "Bell": return Bell;
     case "Grid": return Grid;
+    case "Sparkles": return Sparkles;
     default: return Grid;
   }
 };
@@ -814,6 +815,33 @@ const expandQuery = (q: string): string[] => {
   return Array.from(new Set(expansions));
 };
 
+const DEFAULT_CATEGORIES: CategoryItem[] = [
+  { id: "welfare", label: "জনকল্যাণ প্রকল্প", desc: "সরকারি প্রকল্প ও সমাজসেবামূলক সহায়তা প্রোগ্রামসমূহ", iconName: "Sparkles" },
+  { id: "jobs", label: "সরকারি ও বেসরকারি চাকরি", desc: "রাজ্য ও কেন্দ্রের সাম্প্রতিকতম নিয়োগ বিজ্ঞপ্তি ও শূন্যপদ", iconName: "Briefcase" },
+  { id: "scholarships", label: "স্কলারশিপ ও অনুদান", desc: "মেধাবী শিক্ষার্থীদের জন্য শিক্ষাবৃত্তি ও আর্থিক অনুদান স্কিম", iconName: "GraduationCap" },
+  { id: "identity", label: "আধার ও পরিচয়পত্র", desc: "আধার, ভোটার, প্যান কার্ড ও অনুষঙ্গিক পরিচয় প্রমাণ প্রক্রিয়াকরণ", iconName: "IdCard" },
+  { id: "utility", label: "সার্টিফিকেট ও লাইসেন্স", desc: "জাতভিত্তিক শংসাপত্র, জন্ম-মৃত্যু নিবন্ধন ও ডিজিটাল লাইসেন্স আবেদন", iconName: "FileText" },
+  { id: "health", label: "হেলথ ও বিমা", desc: "স্বাস্থ্য সাথী ও ABHA বিমা কার্ড সংক্রান্ত গাইডসমূহ", iconName: "HeartPulse" },
+  { id: "land", label: "জমি ও সম্পত্তি", desc: "বাংলাভূমি খতিয়ান, দাগের তথ্য ও সম্পত্তি রেজিস্ট্রেশন সংক্রান্ত পোর্টালসমূহ", iconName: "MapPin" },
+  { id: "cyber_cafe", label: "সাইবার ক্যাফে", desc: "সাইবার ক্যাফে ও অন্যান্য সাধারণ নাগরিক সুবিধাসমূহ", iconName: "Laptop" }
+];
+
+const mergeCategoriesWithDefaults = (dbList: CategoryItem[]): CategoryItem[] => {
+  const merged = [...DEFAULT_CATEGORIES];
+  if (!dbList || !Array.isArray(dbList)) return merged;
+  dbList.forEach((item) => {
+    if (item && item.id) {
+      const idx = merged.findIndex((c) => c.id === item.id);
+      if (idx !== -1) {
+        merged[idx] = { ...merged[idx], ...item };
+      } else {
+        merged.push(item);
+      }
+    }
+  });
+  return merged;
+};
+
 export default function App() {
   const [isScrolled, setIsScrolled] = useState(false);
   useEffect(() => {
@@ -830,12 +858,12 @@ export default function App() {
   const [updates, setUpdates] = useState<AppUpdate[]>(INITIAL_UPDATES);
   const [scholarships, setScholarships] = useState<Scholarship[]>([]);
   const [services, setServices] = useState<ServiceItem[]>([]);
-  const [categories, setCategories] = useState<CategoryItem[]>([]);
+  const [categories, setCategories] = useState<CategoryItem[]>(DEFAULT_CATEGORIES);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [firebaseStatus, setFirebaseStatus] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [docCategory, setDocCategory] = useState<string>("all");
-  const [settings, setSettings] = useState<{ geminiApiKey: string }>({ geminiApiKey: "" });
+  const [settings, setSettings] = useState<{ geminiApiKey: string; heroBannerUrl?: string }>({ geminiApiKey: "", heroBannerUrl: "" });
 
   const allDashboardItems = useMemo(() => {
     const list: any[] = [];
@@ -848,6 +876,8 @@ export default function App() {
           title: item.title,
           subtitle: item.titleEn || item.categoryName || "সরকারি প্রকল্প",
           cat: "welfare",
+          category: item.category || "welfare",
+          categoryName: item.categoryName || "জনকল্যাণ",
           badge: item.categoryName || "জনকল্যাণ",
           btnText: "আবেদন গাইড",
           description: item.description || `সুবিধা: ${item.benefits || ""} | যোগ্যতা: ${item.eligibility || ""}`,
@@ -872,6 +902,8 @@ export default function App() {
           title: item.title,
           subtitle: item.subtitle || item.categoryName || "নিয়োগ বিজ্ঞপ্তি",
           cat: "jobs",
+          category: item.category || "jobs",
+          categoryName: item.categoryName || "সরকারি চাকরি",
           badge: item.categoryName || "সরকারি চাকরি",
           btnText: "আবেদন করুন",
           description: item.description || `শূন্যপদ: ${item.vacancy || "বিজ্ঞপ্তি অনুযায়ী"} | যোগ্যতা: ${item.qualification || "যোগ্যতা দেখুন"} | শেষ তারিখ: ${item.lastDate || "শীঘ্রই আসবে"}`,
@@ -895,6 +927,8 @@ export default function App() {
           title: item.title,
           subtitle: item.amount || "শিক্ষাবৃত্তি অনুদান",
           cat: "scholarships",
+          category: item.category || "scholarships",
+          categoryName: item.categoryName || "স্কলারশিপ",
           badge: "স্কলারশিপ",
           btnText: "আবেদন গাইড",
           description: item.description || `পরিমাপ: ${item.amount || ""} | যোগ্যতা: ${item.eligibility || ""} | শেষ তারিখ: ${item.lastDate || ""}`,
@@ -1081,7 +1115,7 @@ export default function App() {
               const list = Array.isArray(val)
                 ? val.filter(Boolean)
                 : Object.keys(val).map((k) => val[k]);
-              if (list.length > 0) setCategories(list);
+              if (list.length > 0) setCategories(mergeCategoriesWithDefaults(list));
             }
           }, (err) => {
             console.warn("Client-side categories RTDB listener skipped:", err);
@@ -1089,7 +1123,7 @@ export default function App() {
             unsubCategories = onSnapshot(collection(db, "categories"), (snap) => {
               const list: CategoryItem[] = [];
               snap.forEach((doc) => list.push(doc.data() as CategoryItem));
-              if (list.length > 0) setCategories(list);
+              if (list.length > 0) setCategories(mergeCategoriesWithDefaults(list));
             }, (fsErr) => {
               console.warn("Fallback client categories Firestore skipped:", fsErr);
             });
@@ -1149,7 +1183,7 @@ export default function App() {
               list.push(doc.data() as CategoryItem);
             });
             if (list.length > 0) {
-              setCategories(list);
+              setCategories(mergeCategoriesWithDefaults(list));
             }
           }, (err) => {
             console.warn("Client-side categories onSnapshot listener skipped:", err);
@@ -1206,7 +1240,7 @@ export default function App() {
 
         const categoriesR = await fetch("/api/categories").then(r => r.json()).catch(() => []);
         if (Array.isArray(categoriesR) && categoriesR.length > 0) {
-          setCategories((prev) => prev.length === 0 ? categoriesR : prev);
+          setCategories(mergeCategoriesWithDefaults(categoriesR));
         }
 
         const suggestionsR = await fetch("/api/suggestions").then(r => r.json()).catch(() => []);
@@ -1510,7 +1544,7 @@ export default function App() {
     }
   };
 
-  const handleSaveSettings = async (newSettings: { geminiApiKey: string }): Promise<boolean> => {
+   const handleSaveSettings = async (newSettings: { geminiApiKey: string; heroBannerUrl?: string }): Promise<boolean> => {
     try {
       if (!isPlaceholderFirebase) {
         if (rtdb) {
@@ -1837,7 +1871,7 @@ export default function App() {
             <div className="flex md:hidden">
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="p-2.5 rounded-xl text-slate-500 hover:text-slate-700 hover:bg-slate-100 focus:outline-hidden cursor-pointer"
+                className="p-2.5 rounded-xl text-slate-500 hover:text-slate-700 hover:bg-slate-100 focus:outline-[none] cursor-pointer"
               >
                 {isMobileMenuOpen ? (
                   <X className="h-5.5 w-5.5" />
@@ -1940,7 +1974,7 @@ export default function App() {
               {/* Background Howrah Bridge Sunset Image spanning full width/height with higher saturation & contrast */}
               <div className="absolute inset-0 select-none pointer-events-none z-0">
                 <img
-                  src="https://images.unsplash.com/photo-1558431382-27e303142255?auto=format&fit=crop&w=1800&q=85"
+                  src={settings.heroBannerUrl || "https://images.unsplash.com/photo-1558431382-27e303142255?auto=format&fit=crop&w=1800&q=85"}
                   alt="Howrah Bridge Sunset"
                   className="w-full h-full object-cover object-center brightness-[0.92] contrast-120 saturate-135"
                   referrerPolicy="no-referrer"
@@ -2009,15 +2043,10 @@ export default function App() {
                 <div className="text-[10px] text-slate-400 font-black tracking-wider uppercase font-sans select-none text-left">ক্যাটাগরি ফিল্টার করুন:</div>
                 <div className="flex flex-wrap items-center gap-1.5 md:gap-2 select-none w-full">
                   {[
-                    { id: "all", label: "সব সেবা", icon: Grid },
-                    { id: "welfare", label: "জনকল্যাণ প্রকল্প", icon: Sparkles },
-                    { id: "jobs", label: "সরকারি ও বেসরকারি চাকরি", icon: Briefcase },
-                    { id: "scholarships", label: "স্কলারশিপ ও অনুদান", icon: GraduationCap },
-                    { id: "identity", label: "আধার ও পরিচয়পত্র", icon: IdCard },
-                    { id: "utility", label: "সার্টিফিকেট ও লাইসেন্স", icon: FileText },
-                    { id: "land", label: "জমি ও সম্পত্তি", icon: MapPin }
+                    { id: "all", label: "সব সেবা", iconName: "Grid" },
+                    ...categories.map((c) => ({ id: c.id, label: c.label, iconName: c.iconName }))
                   ].map((cat) => {
-                    const IconComponent = cat.icon;
+                    const IconComponent = getCategoryIcon(cat.iconName);
                     const isCatActive = docCategory === cat.id;
                     return (
                       <button

@@ -31,6 +31,43 @@ import {
   MessageSquare
 } from "lucide-react";
 
+const compressImage = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const MAX_WIDTH = 1200;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > MAX_WIDTH) {
+          height = Math.round((height * MAX_WIDTH) / width);
+          width = MAX_WIDTH;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          resolve(e.target?.result as string);
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.75);
+        resolve(dataUrl);
+      };
+      img.onerror = () => reject(new Error("Image load error"));
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = () => reject(new Error("File read error"));
+    reader.readAsDataURL(file);
+  });
+};
+
 interface AdminPanelProps {
   schemes: Scheme[];
   onCreateScheme: (scheme: Scheme) => Promise<void>;
@@ -61,12 +98,30 @@ interface AdminPanelProps {
   onClose: () => void;
   triggerPushNotification: (text: string) => void;
   firebaseStatus?: any;
-  settings: { geminiApiKey: string };
-  onSaveSettings: (newSettings: { geminiApiKey: string }) => Promise<boolean>;
+  settings: { geminiApiKey: string; heroBannerUrl?: string };
+  onSaveSettings: (newSettings: { geminiApiKey: string; heroBannerUrl?: string }) => Promise<boolean>;
   suggestions?: Suggestion[];
   onSaveSuggestion?: (suggestion: Suggestion) => Promise<void>;
   onDeleteSuggestion?: (id: string) => Promise<void>;
 }
+
+const getCategoryIcon = (iconName?: string) => {
+  switch (iconName) {
+    case "Award": return Award;
+    case "Briefcase": return Briefcase;
+    case "GraduationCap": return GraduationCap;
+    case "IdCard": return IdCard;
+    case "FileText": return FileText;
+    case "HeartPulse": return HeartPulse;
+    case "MapPin": return MapPin;
+    case "Laptop": return Laptop;
+    case "Globe": return Globe;
+    case "Layers": return Layers;
+    case "Bell": return Bell;
+    case "FileCheck": return FileCheck;
+    default: return Grid;
+  }
+};
 
 export default function AdminPanel({
   schemes,
@@ -116,15 +171,18 @@ export default function AdminPanel({
   const [notificationMsg, setNotificationMsg] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // A.I. Settings states
+  // A.I. & Appearance Settings states
   const [apiKeyInput, setApiKeyInput] = useState(settings?.geminiApiKey || "");
   const [showApiKey, setShowApiKey] = useState(false);
+  const [heroBannerUrlInput, setHeroBannerUrlInput] = useState(settings?.heroBannerUrl || "");
+  const [isUploading, setIsUploading] = useState(false);
 
   React.useEffect(() => {
-    if (settings?.geminiApiKey) {
-      setApiKeyInput(settings.geminiApiKey);
+    if (settings) {
+      setApiKeyInput(settings.geminiApiKey || "");
+      setHeroBannerUrlInput(settings.heroBannerUrl || "");
     }
-  }, [settings?.geminiApiKey]);
+  }, [settings]);
 
   const tabsContainerRef = useRef<HTMLDivElement>(null);
   const scrollTabs = (direction: "left" | "right") => {
@@ -761,6 +819,10 @@ export default function AdminPanel({
     showNotification("পোর্টাল জুড়ে ব্রডকাস্ট पुश ঘোষণা তাৎক্ষণিক সফল!");
   };
 
+  const defaultCategoryIds = ["welfare", "jobs", "scholarships", "identity", "utility", "health", "land", "cyber_cafe"];
+  const customCategories = categories.filter(c => c && c.id && !defaultCategoryIds.includes(c.id));
+  const serviceTabIds = ["identity", "utility", "health", "land", "cyber_cafe", ...customCategories.map(c => c.id)];
+
   const tabItems = [
     { id: "analytics", label: "সার্বিক অ্যানালিটিক্স", icon: PieChart, count: null },
     { id: "welfare", label: "সরকারি প্রকল্প", icon: Layers, count: schemes.length },
@@ -771,6 +833,15 @@ export default function AdminPanel({
     { id: "health", label: "হেলথ ও বিমা", icon: HeartPulse, count: services.filter(s => s.category === "health").length },
     { id: "land", label: "জমি ও পরচা", icon: FileCheck, count: services.filter(s => s.category === "land").length },
     { id: "cyber_cafe", label: "সাইবার ক্যাফে", icon: Laptop, count: services.filter(s => s.category === "cyber_cafe").length },
+    
+    // Dynamic Custom Categories
+    ...customCategories.map((c) => ({
+      id: c.id,
+      label: c.label,
+      icon: getCategoryIcon(c.iconName),
+      count: services.filter(s => s.category === c.id).length
+    })),
+
     { id: "categories", label: "বিভাগ পরিচালনা", icon: Grid, count: categories.length },
     { id: "suggestions", label: "সাজেশন ও অভিযোগ", icon: MessageSquare, count: suggestions.length },
     { id: "settings", label: "এআই সিস্টেম সেটিংস", icon: Settings, count: null }
@@ -826,7 +897,7 @@ export default function AdminPanel({
                   cancelScholarshipEdit();
                   cancelServiceEdit();
                   cancelCategoryEdit();
-                  if (["identity", "utility", "health", "land", "cyber_cafe"].includes(val)) {
+                  if (serviceTabIds.includes(val)) {
                     setServiceCategory(val as any);
                   }
                 }}
@@ -858,7 +929,7 @@ export default function AdminPanel({
                       cancelScholarshipEdit();
                       cancelServiceEdit();
                       cancelCategoryEdit();
-                      if (["identity", "utility", "health", "land", "cyber_cafe"].includes(tab.id)) {
+                      if (serviceTabIds.includes(tab.id)) {
                         setServiceCategory(tab.id as any);
                       }
                     }}
@@ -903,7 +974,7 @@ export default function AdminPanel({
                       cancelScholarshipEdit();
                       cancelServiceEdit();
                       cancelCategoryEdit();
-                      if (["identity", "utility", "health", "land", "cyber_cafe"].includes(tab.id)) {
+                      if (serviceTabIds.includes(tab.id)) {
                         setServiceCategory(tab.id as any);
                       }
                     }}
@@ -1038,16 +1109,28 @@ export default function AdminPanel({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-150">
-                    {[
-                      { name: "সরকারি প্রকল্প (Welfare)", key: "welfare", count: schemes.length + services.filter(s => s.category === "welfare").length },
-                      { name: "সরকারি চাকরি (Jobs)", key: "jobs", count: jobs.length + services.filter(s => s.category === "jobs").length },
-                      { name: "স্কলারশিপ (Scholarships)", key: "scholarships", count: scholarships.length + services.filter(s => s.category === "scholarships").length },
-                      { name: "পরিচয় ও কার্ড (Identity)", key: "identity", count: services.filter(s => s.category === "identity" || s.category === "aadhaar_pan").length },
-                      { name: "শংসাপত্র (Utility)", key: "utility", count: services.filter(s => s.category === "utility" || s.category === "certificates").length },
-                      { name: "হেলথ ও বিমা (Health)", key: "health", count: services.filter(s => s.category === "health").length },
-                      { name: "জমি ও পরচা (Land)", key: "land", count: services.filter(s => s.category === "land").length },
-                      { name: "সাইবার ক্যাফে (Cyber Cafe)", key: "cyber_cafe", count: services.filter(s => s.category === "cyber_cafe").length }
-                    ].map((cat) => (
+                    {categories.map((c) => {
+                      let count = 0;
+                      if (c.id === "welfare") {
+                        count = schemes.length + services.filter(s => s.category === "welfare").length;
+                      } else if (c.id === "jobs") {
+                        count = jobs.length + services.filter(s => s.category === "jobs").length;
+                      } else if (c.id === "scholarships") {
+                        count = scholarships.length + services.filter(s => s.category === "scholarships").length;
+                      } else if (c.id === "identity") {
+                        count = services.filter(s => s.category === "identity" || s.category === "aadhaar_pan").length;
+                      } else if (c.id === "utility") {
+                        count = services.filter(s => s.category === "utility" || s.category === "certificates").length;
+                      } else {
+                        count = services.filter(s => s.category === c.id).length;
+                      }
+
+                      return {
+                        name: `${c.label} (${c.id.charAt(0).toUpperCase() + c.id.slice(1)})`,
+                        key: c.id,
+                        count
+                      };
+                    }).map((cat) => (
                       <tr key={cat.key} className="hover:bg-slate-50/70 transition-colors">
                         <td className="px-4 py-3 font-bold text-slate-800">{cat.name}</td>
                         <td className="px-4 py-3 font-mono text-slate-450 font-semibold text-[10.5px]">{cat.key}</td>
@@ -1666,16 +1749,13 @@ export default function AdminPanel({
         )}
 
         {/* TAB 5: CATEGORIZED DIGITAL SERVICES MANAGE */}
-        {["identity", "utility", "health", "land", "cyber_cafe"].includes(activeTab) && (
+        {serviceTabIds.includes(activeTab) && (
           <div className="space-y-6">
             <form onSubmit={handleServiceSubmit} className="bg-slate-50 p-5 rounded-xl border border-slate-100 space-y-4">
               <h3 className="font-extrabold text-slate-800 flex items-center gap-1.5 text-sm md:text-base">
                 <PlusCircle className="h-4.5 w-4.5 text-bengali-orange animate-bounce" />
                 {editingServiceId ? "সিটিজেন ডিজিটাল সার্ভিস বিবরণ সংশোধন করুন" : `নতুন "${
-                  activeTab === "identity" ? "পরিচয় ও কার্ড" :
-                  activeTab === "utility" ? "শংসাপত্র ও সার্টিফিকেট" :
-                  activeTab === "health" ? "হেলথ ও বিমা" :
-                  activeTab === "land" ? "জমি ও পরচা" : "সাইবার ক্যাফে"
+                  tabItems.find(t => t.id === activeTab)?.label || "সেবা"
                 }" গাইড বা সরাসরি লিঙ্ক যুক্ত করুন`}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2402,24 +2482,24 @@ export default function AdminPanel({
         {/* TAB 9: AI SETTINGS PLAN */}
         {activeTab === "settings" && (
           <div className="space-y-6 max-w-4xl">
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8 space-y-6">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8 space-y-6 animate-fade-in">
               <div className="border-b border-slate-100 pb-4">
                 <h3 className="text-sm md:text-base font-extrabold text-slate-800 flex items-center gap-2">
                   <Settings className="h-5 w-5 text-bengali-orange animate-spin-slow" />
-                  এআই সিস্টেম কনফিগারেশন ও সেটিংস (AI Configuration)
+                  সিস্টেম কনফিগারেশন ও কালার/পটভূমি সেটিংস (System & Background Settings)
                 </h3>
                 <p className="text-[11px] text-slate-500 font-medium mt-1">
-                  এখানে আপনার Gemini (কৃত্তিম বুদ্ধিমত্তা) এপিআই কী সেট করুন যাতে চ্যাট হেল্পার সর্বদা সঠিক রিয়েল-টাইম উত্তর দিতে পারে।
+                  এখানে আপনার এআই চ্যাট কনফিগার করুন এবং ল্যান্ডিং পেজের হিরো ব্যানার ব্যাকগ্রাউন্ডের ছবি সম্পূর্ণ নিজের মতো পরিবর্তন করুন।
                 </p>
               </div>
 
               <div className="bg-amber-50/50 border border-amber-100/70 rounded-xl p-4 text-xs text-amber-900 space-y-2">
                 <h4 className="font-extrabold flex items-center gap-1.5 text-amber-800">
                   <AlertCircle className="h-4 w-4 text-bengali-orange shrink-0" />
-                  কেন কৃত্তিম বুদ্ধিমত্তা এপিআই কি প্রয়োজন?
+                  কীভাবে সেটিংস পরিবর্তন করবেন?
                 </h4>
                 <p className="leading-relaxed font-semibold text-slate-650">
-                  আপনার কাস্টম বা নিজস্ব Gemini API Key ব্যবহার করলে বাংলার সেবা পোর্টালের সহকারী চ্যাটবট অ্যাক্টিভ হবে। এর ফলে সরকারি ক্যাটাগরি, সুবিধা, এবং সাধারণ প্রশ্নোত্তর যেকোনো নাগরিক সম্পূর্ণ রিয়েল-টাইম লাইভ বাংলায় জানতে পারবেন।
+                  নিচে আপনার এআই চ্যাটবটের জন্য এপিআই কী টাইপ করতে পারেন এবং ল্যান্ডিং পেজে যে প্রধান ছবি রয়েছে তা পরিবর্তন করতে ফাইল আপলোড বা প্রি-সেট ব্যবহার করতে পারেন। সেভ করার পর এটি রিয়েল-টাইমে সেভ হয়ে যাবে।
                 </p>
               </div>
 
@@ -2427,9 +2507,12 @@ export default function AdminPanel({
                 e.preventDefault();
                 setIsSubmitting(true);
                 try {
-                  const success = await onSaveSettings({ geminiApiKey: apiKeyInput });
+                  const success = await onSaveSettings({ 
+                    geminiApiKey: apiKeyInput,
+                    heroBannerUrl: heroBannerUrlInput
+                  });
                   if (success) {
-                    showNotification("এআই সিস্টেম সেটিংস সফলভাবে সংরক্ষণ করা হয়েছে!");
+                    showNotification("সিস্টেম সেটিংস ও ব্যানার ইমেজ সফলভাবে সংরক্ষণ করা হয়েছে!");
                   } else {
                     showNotification("সেটিংস সেভ করতে ব্যর্থ হয়েছে।");
                   }
@@ -2438,52 +2521,161 @@ export default function AdminPanel({
                 } finally {
                   setIsSubmitting(false);
                 }
-              }} className="space-y-5">
-                <div>
-                  <label className="text-[11px] font-extrabold text-slate-700 block mb-2">Gemini API Key (এআই চ্যাট এর জন্য)</label>
-                  <div className="relative rounded-lg shadow-sm">
-                    <input
-                      type={showApiKey ? "text" : "password"}
-                      value={apiKeyInput}
-                      onChange={(e) => setApiKeyInput(e.target.value)}
-                      placeholder="AIZAsy..."
-                      className="w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-orange-500/10 focus:border-bengali-orange pr-20"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowApiKey(!showApiKey)}
-                      className="absolute inset-y-0 right-0 px-3 flex items-center text-xs font-bold text-slate-500 hover:text-slate-700 cursor-pointer"
-                    >
-                      {showApiKey ? "লুকান" : "দেখুন"}
-                    </button>
+              }} className="space-y-6">
+                
+                {/* SECTION 1: AI ASSISTANT CONFIG */}
+                <div className="p-4 border border-slate-100 rounded-xl bg-slate-50/50 space-y-4">
+                  <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider block">১. এআই অ্যাসিস্ট্যান্ট চ্যাটবট সেটিংস</h4>
+                  <div>
+                    <label className="text-[11px] font-extrabold text-slate-600 block mb-1.5">Gemini API Key (সহকারী চ্যাট এর জন্য)</label>
+                    <div className="relative rounded-lg shadow-sm">
+                      <input
+                        type={showApiKey ? "text" : "password"}
+                        value={apiKeyInput}
+                        onChange={(e) => setApiKeyInput(e.target.value)}
+                        placeholder="AIZAsy..."
+                        className="w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-orange-500/10 focus:border-bengali-orange pr-20 animate-fade-in"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowApiKey(!showApiKey)}
+                        className="absolute inset-y-0 right-0 px-3 flex items-center text-xs font-bold text-slate-500 hover:text-slate-700 cursor-pointer"
+                      >
+                        {showApiKey ? "লুকান" : "দেখুন"}
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-slate-400 mt-1 font-semibold">
+                      * এই কাস্টম API কী বাংলায় উত্তর দেওয়ার জন্য Google Gemini SDK (gemini-3.5-flash) দ্বারা সরাসরি ব্যবহৃত হয়।
+                    </p>
                   </div>
-                  <p className="text-[10px] text-slate-400 mt-1.5 font-semibold">
-                    * আপনার কাস্টম API কি ডাটাবেসে রিয়েল-টাইমে ও সুরক্ষিতভাবে পিং হবে। এটি বাংলায় উত্তর দেওয়ার জন্য Google Gemini SDK (gemini-3.5-flash) দ্বারা ব্যবহৃত হয়।
-                  </p>
                 </div>
 
+                {/* SECTION 2: HERO BANNER IMAGE SETTINGS */}
+                <div className="p-4 border border-slate-100 rounded-xl bg-slate-50/50 space-y-5">
+                  <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider block">২. ল্যান্ডিং পেজ হিরো ব্যানার পরিবর্তন করুন</h4>
+                  
+                  {/* Preset Banner Grid with thumbnails */}
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-extrabold text-slate-600 block">সুন্দর প্রি-সেট ইমেজগুলো থেকে সিলেক্ট করুন (১-ক্লিক)</label>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                      {[
+                        { id: "p1", name: "সূর্যাস্ত হাওড়া ব্রিজ", url: "https://images.unsplash.com/photo-1558431382-27e303142255?auto=format&fit=crop&w=1200&q=80" },
+                        { id: "p2", name: "ভিক্টোরিয়া মেমোরিয়াল", url: "https://images.unsplash.com/photo-1595841696660-ab6189ef9492?auto=format&fit=crop&w=1200&q=80" },
+                        { id: "p3", name: "সবুজ বাংলার প্রকৃতি", url: "https://images.unsplash.com/photo-1626314811808-f40b2f155986?auto=format&fit=crop&w=1200&q=80" },
+                        { id: "p4", name: "ডিজিটাল ক্যাসকেড গ্রিড", url: "https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&w=1200&q=80" }
+                      ].map((preset) => (
+                        <button
+                          key={preset.id}
+                          type="button"
+                          onClick={() => setHeroBannerUrlInput(preset.url)}
+                          className={`group relative rounded-lg overflow-hidden border-2 h-14 transition-all duration-300 text-left cursor-pointer ${
+                            heroBannerUrlInput === preset.url ? "border-bengali-orange scale-[1.02] shadow-xs" : "border-slate-200 hover:border-slate-400"
+                          }`}
+                        >
+                          <img src={preset.url} alt={preset.name} className="absolute inset-0 w-full h-full object-cover brightness-[0.7] group-hover:scale-105 transition-all duration-305" referrerPolicy="no-referrer" />
+                          <div className="absolute inset-0 bg-black/10" />
+                          <span className="absolute bottom-1 left-1.5 right-1.5 text-[9px] font-extrabold text-white truncate drop-shadow-sm">{preset.name}</span>
+                          {heroBannerUrlInput === preset.url && (
+                            <span className="absolute top-1 right-1 bg-bengali-orange text-white rounded-full p-0.5 shadow-xs">
+                              <Check className="h-2 w-2" />
+                            </span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Device File Upload Drag-n-Drop box */}
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-extrabold text-slate-600 block">কম্পিউটার বা মোবাইল থেকে নতুন ছবি আপলোড করুন</label>
+                    <div className="flex items-center gap-4">
+                      <div className="relative grow">
+                        <label className="flex flex-col items-center justify-center border-2 border-dashed border-slate-300 hover:border-bengali-orange bg-white rounded-xl py-4 px-5 cursor-pointer transition-all group hover:bg-orange-50/10">
+                          <svg className="h-5 w-5 text-slate-400 group-hover:text-bengali-orange mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          <span className="text-[11px] font-extrabold text-slate-700">ছবি নির্বাচন করতে ক্লিক করুন</span>
+                          <span className="text-[9px] text-slate-400 font-semibold mt-0.5">সবোর্চ্চ সাইজ ও রেজুলেশন ক্লায়েন্টে স্বয়ংক্রিয় কম্প্রেস হবে (JPEG)</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                setIsUploading(true);
+                                try {
+                                  const compressedBase64 = await compressImage(file);
+                                  setHeroBannerUrlInput(compressedBase64);
+                                } catch (err) {
+                                  console.error("Failed to compress image:", err);
+                                  showNotification("ছবি প্রসেসিং করতে সমস্যা হয়েছে। অনুগ্রহ করে অন্য ছবি নির্বাচন করুন।");
+                                } finally {
+                                  setIsUploading(false);
+                                }
+                              }
+                            }}
+                          />
+                        </label>
+                      </div>
+
+                      {/* Preview Thumb of current selection */}
+                      {heroBannerUrlInput && (
+                        <div className="shrink-0 relative border border-slate-200 rounded-xl overflow-hidden shadow-xs h-16 w-28 bg-slate-100 flex items-center justify-center">
+                          <img
+                            src={heroBannerUrlInput}
+                            alt="Preview"
+                            className="w-full h-full object-cover"
+                            referrerPolicy="no-referrer"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setHeroBannerUrlInput("")}
+                            className="absolute inset-0 bg-black/40 hover:bg-black/60 opacity-0 hover:opacity-100 transition-all flex items-center justify-center text-[10px] text-white font-extrabold cursor-pointer"
+                          >
+                            বাদ দিন
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Custom URL Input Field */}
+                  <div>
+                    <label className="text-[11px] font-extrabold text-slate-650 block mb-1">অথবা পটভূমির ছবির কাস্টম লিঙ্ক দিন (Custom Web URL)</label>
+                    <input
+                      type="url"
+                      value={heroBannerUrlInput}
+                      onChange={(e) => setHeroBannerUrlInput(e.target.value)}
+                      placeholder="https://images.unsplash.com/... বা অন্য কোনো ছবির পূর্ণাঙ্গ লিঙ্ক"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-orange-500/10 focus:border-bengali-orange"
+                    />
+                  </div>
+                </div>
+
+                {/* Submitting state status */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 justify-between border-t border-slate-100 pt-5">
                   <div className="text-xs font-bold flex items-center gap-1.5">
-                    <span className="text-slate-500">বর্তমান অবস্থা:</span>
-                    {settings?.geminiApiKey ? (
-                      <span className="text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border border-emerald-100 flex items-center gap-1">
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-                        সক্রিয় ও কনফিগারড্ (Configured)
+                    <span className="text-slate-500">কালার ও কন্টেন্ট ব্যানার লাইভ অবস্থা:</span>
+                    {heroBannerUrlInput ? (
+                      <span className="text-orange-655 bg-orange-50 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border border-orange-100 flex items-center gap-1">
+                        <span className="h-1.5 w-1.5 rounded-full bg-orange-500"></span>
+                        কাস্টম ব্যানার সক্রিয় (Custom Banner)
                       </span>
                     ) : (
                       <span className="text-slate-400 bg-slate-100 px-2.5 py-0.5 rounded-full text-[10px] font-bold">
-                        অসংরক্ষিত (Not Set)
+                        ডিফল্ট (Default Unsplash)
                       </span>
                     )}
                   </div>
 
                   <button
                     type="submit"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || isUploading}
                     className="bg-bengali-orange hover:bg-orange-650 text-white font-extrabold py-2 px-5 rounded-lg text-xs tracking-wider transition-all shadow-sm flex items-center gap-1.5 cursor-pointer border border-orange-600/50 disabled:opacity-50"
                   >
                     <Check className="h-3.5 w-3.5" />
-                    {isSubmitting ? "সংরক্ষণ করা হচ্ছে..." : "সেটিংস সংরক্ষণ করুন (Save)"}
+                    {isSubmitting ? "সংরক্ষণ করা হচ্ছে..." : isUploading ? "ছবি আপলোড হচ্ছে..." : "সেটিংস সংরক্ষণ করুন (Save)"}
                   </button>
                 </div>
               </form>
