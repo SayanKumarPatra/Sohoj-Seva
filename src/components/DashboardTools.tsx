@@ -14,6 +14,7 @@ interface DashboardToolsProps {
   setSlipPaid: (val: boolean) => void;
   generatedSlip: any | null;
   setGeneratedSlip: (val: any) => void;
+  onBackToDashboard?: () => void;
 }
 
 export default function DashboardTools({
@@ -28,7 +29,8 @@ export default function DashboardTools({
   slipPaid,
   setSlipPaid,
   generatedSlip,
-  setGeneratedSlip
+  setGeneratedSlip,
+  onBackToDashboard
 }: DashboardToolsProps) {
 
   const handleGenerateSlip = () => {
@@ -49,6 +51,17 @@ export default function DashboardTools({
 
   return (
     <div className="space-y-6 sm:space-y-7 animate-fade-in select-none">
+      
+      {onBackToDashboard && (
+        <div className="flex justify-start">
+          <button
+            onClick={onBackToDashboard}
+            className="flex items-center gap-1.5 text-xs font-black text-[#15803D] hover:text-emerald-800 bg-[#EFFDF4] hover:bg-emerald-100 border border-[#86EFAC]/50 px-4 py-2 rounded-xl transition-all cursor-pointer shadow-3xs active:scale-[0.98]"
+          >
+            ← মূল ড্যাশবোর্ডে ফিরুন (Back Home)
+          </button>
+        </div>
+      )}
       
       {/* 1. Header Block */}
       <div className="relative overflow-hidden rounded-3xl border border-emerald-500/10 bg-linear-to-br bg-gradient-to-br from-emerald-950 to-slate-900 p-5 sm:p-6 text-white shadow-md">

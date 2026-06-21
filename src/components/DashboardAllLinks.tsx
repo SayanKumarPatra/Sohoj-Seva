@@ -22,6 +22,7 @@ interface DashboardAllLinksProps {
   getServiceMetadata: (id: string, cat: string) => { rating: string; badgeText: string; badgeType?: string };
   renderOfficialLogo: (id: string) => React.ReactNode;
   onSelectService: (service: any) => void;
+  onBackToDashboard?: () => void;
 }
 
 export default function DashboardAllLinks({
@@ -33,11 +34,23 @@ export default function DashboardAllLinks({
   getCategoryColorAccent,
   getServiceMetadata,
   renderOfficialLogo,
-  onSelectService
+  onSelectService,
+  onBackToDashboard
 }: DashboardAllLinksProps) {
   
   return (
     <div className="space-y-5 animate-fade-in select-none">
+      
+      {onBackToDashboard && (
+        <div className="flex justify-start">
+          <button
+            onClick={onBackToDashboard}
+            className="flex items-center gap-1.5 text-xs font-black text-[#15803D] hover:text-emerald-800 bg-[#EFFDF4] hover:bg-emerald-100 border border-[#86EFAC]/50 px-4 py-2 rounded-xl transition-all cursor-pointer shadow-3xs active:scale-[0.98]"
+          >
+            ← মূল ড্যাশবোর্ডে ফিরুন (Back Home)
+          </button>
+        </div>
+      )}
       
       {/* 1. Header Banner */}
       <div className="relative overflow-hidden rounded-3xl border border-emerald-500/10 bg-linear-to-br bg-gradient-to-br from-emerald-900 to-[#022c22] p-5 sm:p-6 text-white shadow-md">

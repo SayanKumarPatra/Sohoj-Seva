@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import {
   Search,
+  MoreVertical,
   Bot,
   User,
   Settings,
@@ -963,6 +964,92 @@ export default function App() {
   const [slipPaid, setSlipPaid] = useState(true);
   const [generatedSlip, setGeneratedSlip] = useState<any>(null);
 
+  // --- CYBER CAFE STATE & HANDLERS BEGIN ---
+  const [cafeProfile, setCafeProfile] = useState<{
+    shopName: string;
+    ownerName: string;
+    contact: string;
+    isLoggedIn: boolean;
+  }>(() => {
+    try {
+      const saved = localStorage.getItem("sahaj_seba_cafe_profile");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return { ...parsed, isLoggedIn: true };
+      }
+    } catch (e) {
+      console.warn("Could not read cafe profile from localStorage", e);
+    }
+    return { shopName: "", ownerName: "", contact: "", isLoggedIn: false };
+  });
+
+  const [showCafeModal, setShowCafeModal] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [cafeShopNameInput, setCafeShopNameInput] = useState("");
+  const [cafeOwnerNameInput, setCafeOwnerNameInput] = useState("");
+  const [cafeContactInput, setCafeContactInput] = useState("");
+  const [cafeSubmitSuccess, setCafeSubmitSuccess] = useState(false);
+
+  useEffect(() => {
+    if (showCafeModal) {
+      if (cafeProfile.isLoggedIn) {
+        setCafeShopNameInput(cafeProfile.shopName);
+        setCafeOwnerNameInput(cafeProfile.ownerName);
+        setCafeContactInput(cafeProfile.contact);
+      } else {
+        setCafeShopNameInput("");
+        setCafeOwnerNameInput("");
+        setCafeContactInput("");
+      }
+    }
+  }, [showCafeModal, cafeProfile]);
+
+  const handleCafeProfileSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!cafeShopNameInput.trim() || !cafeOwnerNameInput.trim() || !cafeContactInput.trim()) return;
+
+    const updatedProfile = {
+      shopName: cafeShopNameInput.trim(),
+      ownerName: cafeOwnerNameInput.trim(),
+      contact: cafeContactInput.trim(),
+      isLoggedIn: true
+    };
+
+    setCafeProfile(updatedProfile);
+    localStorage.setItem("sahaj_seba_cafe_profile", JSON.stringify({
+      shopName: updatedProfile.shopName,
+      ownerName: updatedProfile.ownerName,
+      contact: updatedProfile.contact
+    }));
+
+    try {
+      if (rtdb) {
+        const sanitizedContact = updatedProfile.contact.replace(/[^a-zA-Z0-9]/g, "_");
+        await rtdbSet(rtdbRef(rtdb, `cafes/${sanitizedContact}`), {
+          ...updatedProfile,
+          timestamp: new Date().toISOString()
+        });
+      }
+    } catch (error) {
+      console.error("Firebase error saving cafe profile:", error);
+    }
+
+    setCafeSubmitSuccess(true);
+    setTimeout(() => {
+      setShowCafeModal(false);
+      setCafeSubmitSuccess(false);
+    }, 1500);
+  };
+
+  const handleCafeLogout = () => {
+    localStorage.removeItem("sahaj_seba_cafe_profile");
+    setCafeProfile({ shopName: "", ownerName: "", contact: "", isLoggedIn: false });
+    setCafeShopNameInput("");
+    setCafeOwnerNameInput("");
+    setCafeContactInput("");
+  };
+  // --- CYBER CAFE STATE & HANDLERS END ---
+
   const toggleSaveScheme = (id: string) => {
     setSavedSchemeIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
   };
@@ -1836,42 +1923,73 @@ export default function App() {
   };
 
   return (
-    <div className="relative min-h-screen flex flex-col bg-[#F8FAFC] md:bg-slate-50/70 text-[#0F172A] transition-all duration-300 text-sm">
+    <div className="relative min-h-screen flex flex-col bg-[#F8FAFC] text-[#0F172A] transition-all duration-300 text-sm">
       
-      {/* 2. MAIN WRAPPER CONTAINER - Desktop & Mobile Unified Hub Card */}
-      <div className="w-full flex-grow flex flex-col max-w-7xl mx-auto md:my-6 bg-white md:border md:border-slate-200/95 md:rounded-3xl md:shadow-[0_10px_35px_-8px_rgba(15,23,42,0.04)] overflow-hidden">
+      {/* 2. MAIN WRAPPER CONTAINER - Full-Width Full-Bleed Fluid Layout */}
+      <div className="w-full flex-grow flex flex-col bg-[#F8FAFC]/40 relative overflow-hidden">
+        
+        {/* Dynamic Background Floating Balls Layer */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 select-none">
+          {/* Richer glowing ambient colored spheres */}
+          <div className="absolute top-[5%] left-[-10%] w-[350px] h-[350px] sm:w-[500px] sm:h-[500px] rounded-full bg-emerald-500/[0.08] blur-3xl animate-float-1" />
+          <div className="absolute top-[30%] right-[-12%] w-[320px] h-[320px] sm:w-[550px] sm:h-[550px] rounded-full bg-indigo-500/[0.08] blur-3xl animate-float-2" />
+          <div className="absolute top-[60%] left-[-8%] w-[300px] h-[300px] sm:w-[480px] sm:h-[480px] rounded-full bg-amber-500/[0.07] blur-3xl animate-float-3" />
+          <div className="absolute bottom-[2%] right-[-8%] w-[340px] h-[340px] sm:w-[520px] sm:h-[520px] rounded-full bg-teal-500/[0.08] blur-3xl animate-float-1" />
+          
+          {/* Glassmorphic floating translucent bubbles with thin color borders (now beautifully smaller and refined) */}
+          <div className="absolute top-[10%] left-[8%] w-12 h-12 sm:w-16 sm:h-16 rounded-full border border-emerald-500/20 bg-gradient-to-tr from-emerald-400/20 to-teal-400/10 backdrop-blur-3xs animate-float-2 shadow-[0_4px_16px_0_rgba(16,185,129,0.06)]" />
+          <div className="absolute top-[25%] right-[12%] w-14 h-14 sm:w-20 sm:h-20 rounded-full border border-indigo-500/20 bg-gradient-to-tr from-indigo-400/20 to-purple-400/10 backdrop-blur-3xs animate-float-1 shadow-[0_4px_16px_0_rgba(99,102,241,0.06)]" />
+          <div className="absolute top-[48%] left-[5%] w-10 h-10 sm:w-14 sm:h-14 rounded-full border border-amber-500/20 bg-gradient-to-tr from-amber-400/20 to-orange-400/10 backdrop-blur-3xs animate-float-3 shadow-[0_4px_16px_0_rgba(245,158,11,0.06)]" />
+          <div className="absolute bottom-[25%] right-[8%] w-12 h-12 sm:w-16 sm:h-16 rounded-full border border-teal-500/20 bg-gradient-to-tr from-teal-400/20 to-emerald-400/10 backdrop-blur-3xs animate-float-2 shadow-[0_4px_16px_0_rgba(20,184,166,0.06)]" />
+          <div className="absolute bottom-[10%] left-[12%] w-9 h-9 sm:w-12 sm:h-12 rounded-full border border-emerald-500/20 bg-gradient-to-tr from-emerald-555/20 to-green-400/10 backdrop-blur-3xs animate-float-1 shadow-[0_4px_16px_0_rgba(16,185,129,0.05)]" />
+
+          {/* New Interactive-style micro floating bubbles drifting upwards with stagger */}
+          <div className="absolute left-[15%] w-3 h-3 rounded-full bg-emerald-500/25 border border-emerald-400/20 animate-drift-slow-1" />
+          <div className="absolute left-[45%] w-2 h-2 rounded-full bg-indigo-500/25 border border-indigo-400/20 animate-drift-slow-2" />
+          <div className="absolute left-[75%] w-4 h-4 rounded-full bg-amber-550/20 border border-amber-400/20 animate-drift-slow-3" />
+          <div className="absolute left-[30%] w-3 h-3 rounded-full bg-teal-500/25 border border-teal-400/20 animate-drift-slow-2" />
+          <div className="absolute left-[60%] w-2.5 h-2.5 rounded-full bg-green-500/25 border border-green-400/20 animate-drift-slow-1" />
+          <div className="absolute left-[85%] w-3.5 h-3.5 rounded-full bg-purple-500/20 border border-purple-400/20 animate-drift-slow-3" />
+
+          {/* Beautiful glowing points that shimmer & pulse */}
+          <div className="absolute top-[18%] left-[25%] w-4 h-4 rounded-full bg-emerald-500/25 border border-emerald-400/30 blur-3xs animate-shimmer-pulse" />
+          <div className="absolute top-[42%] right-[25%] w-5 h-5 rounded-full bg-indigo-500/25 border border-indigo-400/30 blur-3xs animate-shimmer-pulse" style={{ animationDelay: '1.5s' }} />
+          <div className="absolute bottom-[35%] left-[22%] w-4.5 h-4.5 rounded-full bg-[#15803D]/25 border border-emerald-500/30 blur-3xs animate-shimmer-pulse" style={{ animationDelay: '3s' }} />
+          <div className="absolute bottom-[15%] right-[38%] w-5 h-5 rounded-full bg-amber-500/25 border border-amber-400/30 blur-3xs animate-shimmer-pulse" style={{ animationDelay: '4.5s' }} />
+        </div>
         
         {/* GLOBAL TOP NAVIGATION BAR */}
-        <nav className="bg-white border-b border-slate-200 sticky top-0 md:static z-40 w-full shadow-[0_1px_3px_rgba(0,0,0,0.02)] md:shadow-none select-none font-sans">
-          <div className="w-full px-4 sm:px-6">
-            <div className="flex justify-between h-16 items-center gap-2 sm:gap-4">
+        <nav className="bg-white border-b border-slate-200 sticky top-0 z-40 w-full shadow-[0_1px_3px_rgba(0,0,0,0.02)] select-none font-sans">
+          <div className="w-full px-3 sm:px-6">
+            <div className="flex justify-between h-16 items-center gap-1.5 sm:gap-4">
               {/* Logo and Brand */}
               <div 
                 onClick={() => {
+                  setActiveSidebarTab("services");
                   setIsAdminOpen(false);
                   window.scrollTo({ top: 0, behavior: "smooth" });
                 }}
-                className="flex items-center gap-1.5 sm:gap-2 cursor-pointer group active:scale-95 transition-transform shrink-0"
+                className="flex items-center gap-1 sm:gap-2 cursor-pointer group active:scale-95 transition-transform shrink-0"
               >
                 <img 
                   src={userLogo} 
-                  className="h-8 w-8 sm:h-10 sm:w-10 object-contain bg-slate-50 border border-slate-100/80 rounded-xl p-0.5 sm:p-1 shrink-0" 
+                  className="h-7 w-7 sm:h-10 sm:w-10 object-contain bg-slate-50 border border-slate-100/80 rounded-xl p-0.5 sm:p-1 shrink-0" 
                   alt="সহজ সেবা লোগো"
                   referrerPolicy="no-referrer"
                 />
-                <div className="text-left leading-none font-sans select-none block">
+                <div className="text-left leading-none font-sans select-none block shrink-0">
                   <h1 className="text-xs sm:text-sm md:text-base font-extrabold text-[#15803D] tracking-tight">
                     সহজ সেবা
                   </h1>
-                  <span className="text-[7.5px] sm:text-[9px] md:text-[10px] text-slate-400 font-bold uppercase tracking-wider block">নাগরিক সেবা পোর্টাল</span>
+                  <span className="text-[7.5px] sm:text-[9px] md:text-[10px] text-slate-400 font-bold uppercase tracking-wider hidden xs:block">নাগরিক সেবা</span>
                 </div>
               </div>
 
               {/* Middle Search Bar with Search/খুঁজুন Button & Elegant Glow Styling */}
-              <div className="flex-1 max-w-sm md:max-w-md mx-2 sm:mx-4 relative z-20">
-                <div className="relative flex items-center bg-[#F8FAFC] hover:bg-slate-100/80 border border-slate-250 border-slate-300/80 focus-within:ring-4 focus-within:ring-emerald-500/10 focus-within:border-[#15803D] focus-within:bg-white rounded-xl sm:rounded-2xl overflow-hidden transition-all shadow-[0_2px_8px_-1px_rgba(15,23,42,0.03)]">
-                  <div className="pl-3 sm:pl-4 flex items-center pointer-events-none text-slate-400">
-                    <Search className="h-4 w-4 shrink-0 transition-colors" />
+              <div className="flex-grow w-full max-w-sm md:max-w-md mx-1 sm:mx-4 relative z-20">
+                <div className="relative flex items-center bg-[#F8FAFC] hover:bg-slate-100/80 border border-slate-200 focus-within:ring-4 focus-within:ring-emerald-500/10 focus-within:border-[#15803D] focus-within:bg-white rounded-xl sm:rounded-2xl overflow-hidden transition-all shadow-[0_2px_8px_-1px_rgba(15,23,42,0.03)]">
+                  <div className="pl-2 flex items-center pointer-events-none text-slate-400">
+                    <Search className="h-3.5 w-3.5 shrink-0 transition-colors" />
                   </div>
                   <input
                     type="text"
@@ -1884,14 +2002,14 @@ export default function App() {
                       }
                     }}
                     placeholder="Search government services & portals..."
-                    className="w-full pl-2 pr-2 py-1.5 sm:py-2.5 text-xs sm:text-sm font-bold bg-transparent border-0 outline-hidden focus:ring-0 focus:outline-hidden text-slate-800 placeholder-slate-400"
+                    className="w-full pl-1.5 pr-1.5 py-1.5 sm:py-2.5 text-[11px] sm:text-sm font-bold bg-transparent border-0 outline-hidden focus:ring-0 focus:outline-hidden text-slate-800 placeholder-slate-400"
                   />
                   {searchQuery && (
                     <button
                       onClick={() => setSearchQuery("")}
-                      className="p-1 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer mr-1 shrink-0"
+                      className="p-1 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer mr-0.5 shrink-0"
                     >
-                      <X className="h-3.5 w-3.5" />
+                      <X className="h-3 w-3" />
                     </button>
                   )}
                   <button 
@@ -1905,7 +2023,7 @@ export default function App() {
                         }
                       }, 50);
                     }}
-                    className="bg-[#15803D] hover:bg-green-700 text-white px-3 sm:px-4 py-1.5 sm:py-2.5 text-[11px] sm:text-xs font-black transition-all duration-150 shrink-0 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)] flex items-center gap-1 border-l border-emerald-600"
+                    className="bg-[#15803D] hover:bg-green-700 text-white px-2.5 sm:px-4 py-1.5 sm:py-2.5 text-[11px] sm:text-xs font-black transition-all duration-150 shrink-0 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)] flex items-center gap-1 border-l border-emerald-600"
                   >
                     <span>খুঁজুন</span>
                   </button>
@@ -1913,30 +2031,124 @@ export default function App() {
               </div>
 
               {/* Action area on the right */}
-              <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-                {/* Free Help Center Trigger */}
-                <button
-                  onClick={() => {
-                    setSuggestionSubmitted(false);
-                    setSuggestionText("");
-                    setShowHelpCenterModal(true);
-                  }}
-                  className="bg-amber-50 hover:bg-amber-100/80 text-amber-800 border border-amber-200/90 px-2 sm:px-3.5 py-1.5 rounded-xl text-[10px] sm:text-xs font-black cursor-pointer transition-all duration-150 flex items-center gap-1 shadow-3xs"
-                >
-                  <HelpCircle className="h-3 sm:h-3.5 sm:w-3.5 text-amber-600 shrink-0" />
-                  <span className="hidden leading-none md:inline">ফ্রি হেল্প সেন্টার</span>
-                  <span className="md:hidden">হেল্প</span>
-                </button>
+              <div className="flex items-center gap-1 sm:gap-3 shrink-0 relative">
+                {/* Desktop Buttons - Hidden on Mobile */}
+                <div className="hidden sm:flex items-center gap-1.5 sm:gap-3">
+                  {/* Free Help Center Trigger */}
+                  <button
+                    onClick={() => {
+                      setSuggestionSubmitted(false);
+                      setSuggestionText("");
+                      setShowHelpCenterModal(true);
+                    }}
+                    className="bg-amber-50 hover:bg-amber-100/80 text-amber-800 border border-amber-200/90 px-2 sm:px-3.5 py-1.5 rounded-xl text-[10px] sm:text-xs font-black cursor-pointer transition-all duration-150 flex items-center gap-1 shadow-3xs"
+                  >
+                    <HelpCircle className="h-3 sm:h-3.5 sm:w-3.5 text-amber-600 shrink-0" />
+                    <span className="hidden leading-none md:inline">ফ্রি হেল্প সেন্টার</span>
+                    <span className="md:hidden">হেল্প</span>
+                  </button>
 
-                {/* Admin/Login Trigger */}
-                <button
-                  onClick={() => setShowAdminPasswordModal(true)}
-                  className="text-[#15803D] hover:bg-emerald-50 bg-emerald-50/45 border border-[#86EFAC]/45 px-2.5 sm:px-3.5 py-1.5 rounded-xl text-[10px] sm:text-xs font-black cursor-pointer transition-all duration-150 flex items-center gap-1 shadow-3xs"
-                >
-                  <Shield className="h-3 sm:h-3.5 sm:w-3.5 text-emerald-600 shrink-0" />
-                  <span className="hidden sm:inline">লগইন</span>
-                  <span className="sm:hidden">লগইন</span>
-                </button>
+                  {/* Cyber Cafe Portal Trigger */}
+                  <button
+                    onClick={() => setShowCafeModal(true)}
+                    className={`px-2.5 sm:px-3.5 py-1.5 rounded-xl text-[10px] sm:text-xs font-black cursor-pointer transition-all duration-150 flex items-center gap-1.5 shadow-3xs border transition-transform active:scale-95 shrink-0 ${
+                      cafeProfile.isLoggedIn
+                        ? "bg-emerald-600 text-white border-emerald-500 hover:bg-emerald-700/90"
+                        : "text-emerald-700 hover:bg-[#EFFDF4] bg-[#EFFDF4]/45 border-[#86EFAC]/70"
+                    }`}
+                  >
+                    <Laptop className="h-3 sm:h-3.5 sm:w-3.5 shrink-0" />
+                    <span>
+                      {cafeProfile.isLoggedIn ? cafeProfile.shopName : "সাইবার ক্যাফে"}
+                    </span>
+                  </button>
+
+                  {/* Admin/Login Trigger */}
+                  <button
+                    onClick={() => setShowAdminPasswordModal(true)}
+                    className="text-[#15803D] hover:bg-emerald-50 bg-emerald-50/45 border border-[#86EFAC]/45 px-2.5 sm:px-3.5 py-1.5 rounded-xl text-[10px] sm:text-xs font-black cursor-pointer transition-all duration-150 flex items-center gap-1 shadow-3xs"
+                  >
+                    <Shield className="h-3 sm:h-3.5 sm:w-3.5 text-emerald-600 shrink-0" />
+                    <span>লগইন</span>
+                  </button>
+                </div>
+
+                {/* Mobile Three-Dot Menu - Only visible on Mobile */}
+                <div className="relative sm:hidden z-50">
+                  <button
+                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    className={`p-1.5 text-slate-650 hover:text-emerald-750 border hover:bg-emerald-50/20 rounded-xl transition-all shadow-3xs flex items-center justify-center cursor-pointer active:scale-95 ${
+                      isMobileMenuOpen ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-slate-200 bg-white"
+                    }`}
+                    aria-label="More options"
+                  >
+                    <MoreVertical className="h-4.5 w-4.5 shrink-0 text-slate-500" />
+                  </button>
+
+                  <AnimatePresence>
+                    {isMobileMenuOpen && (
+                      <>
+                        {/* Backdrop overlay to close when clicking outside */}
+                        <div 
+                          className="fixed inset-0 z-40 bg-black/10" 
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        />
+                        
+                        <motion.div 
+                          initial={{ opacity: 0, scale: 0.95, y: -8 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.95, y: -8 }}
+                          transition={{ duration: 0.15 }}
+                          className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 p-2 text-left font-sans"
+                        >
+                          <div className="px-2.5 py-1.5 text-[9px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 mb-1 leading-none">
+                            সহজ অপশন
+                          </div>
+                          
+                          {/* Help Center option */}
+                          <button
+                            onClick={() => {
+                              setIsMobileMenuOpen(false);
+                              setSuggestionSubmitted(false);
+                              setSuggestionText("");
+                              setShowHelpCenterModal(true);
+                            }}
+                            className="w-full flex items-center gap-2 px-3 py-2.5 text-[11px] text-amber-900 hover:bg-amber-50 rounded-xl font-bold transition-all text-left"
+                          >
+                            <HelpCircle className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                            <span>ফ্রি সাহায্য কেন্দ্র (Help)</span>
+                          </button>
+                          
+                          {/* Cyber Cafe option */}
+                          <button
+                            onClick={() => {
+                              setIsMobileMenuOpen(false);
+                              setShowCafeModal(true);
+                            }}
+                            className="w-full flex items-center gap-2 px-3 py-2.5 text-[11px] text-emerald-900 hover:bg-emerald-50 rounded-xl font-bold transition-all mt-1 text-left"
+                          >
+                            <Laptop className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                            <span className="truncate">
+                              {cafeProfile.isLoggedIn ? cafeProfile.shopName : "সাইবার ক্যাফে পোর্টাল"}
+                            </span>
+                          </button>
+                          
+                          {/* Admin/Login option */}
+                          <button
+                            onClick={() => {
+                              setIsMobileMenuOpen(false);
+                              setShowAdminPasswordModal(true);
+                            }}
+                            className="w-full flex items-center gap-2 px-3 py-2.5 text-[11px] text-slate-700 hover:bg-slate-50 rounded-xl font-bold transition-all mt-1 border-t border-slate-100 pt-3 text-left"
+                          >
+                            <Shield className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+                            <span>কর্তৃপক্ষ লগইন (Admin)</span>
+                          </button>
+                        </motion.div>
+                      </>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
             </div>
           </div>
@@ -1945,7 +2157,7 @@ export default function App() {
         {/* 4. Main Container / Content Conditional */}
         <main className="flex-grow">
           {isAdminOpen ? (
-            <div className="max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-10">
+            <div className="w-full px-4 md:px-8 py-6 md:py-10">
               {/* Render Admin Panel with its full settings */}
               <AdminPanel 
                 schemes={schemes}
@@ -2020,146 +2232,74 @@ export default function App() {
             </div>
           ) : (
 
-          <div className="w-full mx-auto px-4 sm:px-6 lg:px-0 py-5 lg:py-0 sm:py-7">
-            <div className="flex flex-col lg:flex-row gap-6 lg:gap-0 items-start lg:items-stretch">
-              
-              {/* LEFT SIDEBAR (সহজ সেবা লোগো থেকে পুরো একটা পেছনে বক্স আকারের নামবে) */}
-              <aside className="w-full lg:w-64 shrink-0 bg-white border border-slate-200/80 lg:border-y-0 lg:border-l-0 lg:border-r lg:border-slate-150/80 shadow-[0_4px_24px_-4px_rgba(15,23,42,0.03)] lg:shadow-none rounded-2xl lg:rounded-none p-4 sm:p-5 lg:p-6 flex flex-col gap-5 select-none self-start lg:self-auto lg:bg-slate-50/50 lg:sticky lg:top-0">
-                
-                {/* 1. Menu List Header at the very top (Enlarged and highlighted) */}
-                <div className="space-y-3">
-                  <div className="text-sm sm:text-base font-extrabold text-slate-800 tracking-wider uppercase pb-2 border-b border-slate-200 flex items-center gap-2 px-0.5">
-                    <ClipboardList className="h-4.5 w-4.5 text-[#15803D]" />
-                    <span>মেনু তালিকা</span>
-                  </div>
+          <div className="w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+            
+            {/* FULL WORKSPACE CONTENT WRAPPER */}
+            <div className="w-full">
 
-                  <div className="grid grid-cols-3 lg:grid-cols-1 gap-1.5 pt-1">
-                    {/* সেবা সমূহ - Active & beautiful */}
-                    <button
-                      onClick={() => {
-                        setActiveSidebarTab("services");
-                        setIsAdminOpen(false);
-                      }}
-                      className={`flex items-center gap-2.5 px-3 py-2.5 sm:py-3 rounded-xl text-[11px] sm:text-xs text-left cursor-pointer transition-all duration-200 border ${
-                        activeSidebarTab === "services"
-                          ? "text-[#15803D] bg-emerald-50 border-[#86EFAC]/45 font-black shadow-3xs"
-                          : "text-slate-650 bg-slate-50 border-slate-200/60 hover:bg-slate-100/30 font-bold"
-                      }`}
-                    >
-                      <Grid className={`h-3.5 w-3.5 shrink-0 ${activeSidebarTab === "services" ? "text-emerald-600" : "text-slate-400"}`} />
-                      <span className="truncate">সেবা সমূহ</span>
-                    </button>
+              {activeSidebarTab === "services" && (
+                <DashboardServices
+                  categories={categories}
+                  updates={updates}
+                  onSelectCategory={(catId) => {
+                    setDocCategory(catId);
+                    setActiveSidebarTab("all-links");
+                    setTimeout(() => {
+                      const el = document.getElementById("services-anchor");
+                      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }, 80);
+                  }}
+                  onNavigateTab={(tab) => {
+                    setActiveSidebarTab(tab);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                  getCategoryIcon={getCategoryIcon}
+                  cafeProfile={cafeProfile}
+                  onOpenCafeModal={() => setShowCafeModal(true)}
+                  onLogoutCafe={handleCafeLogout}
+                />
+              )}
 
-                    {/* সমস্ত লিংক - Inactive but beautiful */}
-                    <button
-                      onClick={() => {
-                        setActiveSidebarTab("all-links");
-                        setIsAdminOpen(false);
-                      }}
-                      className={`flex items-center gap-2.5 px-3 py-2.5 sm:py-3 rounded-xl text-[11px] sm:text-xs text-left cursor-pointer transition-all duration-200 border ${
-                        activeSidebarTab === "all-links"
-                          ? "text-[#15803D] bg-emerald-50 border-[#86EFAC]/45 font-black shadow-3xs"
-                          : "text-slate-650 bg-slate-50 border-slate-200/60 hover:bg-slate-100/30 font-bold"
-                      }`}
-                    >
-                      <Globe className={`h-3.5 w-3.5 shrink-0 ${activeSidebarTab === "all-links" ? "text-emerald-600" : "text-slate-400"}`} />
-                      <span className="truncate">সমস্ত লিংক</span>
-                    </button>
+              {activeSidebarTab === "all-links" && (
+                <DashboardAllLinks
+                  categories={categories}
+                  docCategory={docCategory}
+                  setDocCategory={setDocCategory}
+                  displayedItems={displayedItems}
+                  getCategoryIcon={getCategoryIcon}
+                  getCategoryColorAccent={getCategoryColorAccent}
+                  renderOfficialLogo={renderOfficialLogo}
+                  getServiceMetadata={getServiceMetadata}
+                  onSelectService={setSelectedService}
+                  onBackToDashboard={() => {
+                    setActiveSidebarTab("services");
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                />
+              )}
 
-                    {/* টুলস - Inactive but beautiful */}
-                    <button
-                      onClick={() => {
-                        setActiveSidebarTab("tools");
-                        setIsAdminOpen(false);
-                      }}
-                      className={`flex items-center gap-2.5 px-3 py-2.5 sm:py-3 rounded-xl text-[11px] sm:text-xs text-left cursor-pointer transition-all duration-200 border ${
-                        activeSidebarTab === "tools"
-                          ? "text-[#15803D] bg-emerald-50 border-[#86EFAC]/45 font-black shadow-3xs"
-                          : "text-slate-650 bg-slate-50 border-slate-200/60 hover:bg-slate-100/30 font-bold"
-                      }`}
-                    >
-                      <Laptop className={`h-3.5 w-3.5 shrink-0 ${activeSidebarTab === "tools" ? "text-emerald-600" : "text-slate-400"}`} />
-                      <span className="truncate">টুলস</span>
-                    </button>
-                  </div>
-                </div>
+              {activeSidebarTab === "tools" && (
+                <DashboardTools
+                  slipCustomer={slipCustomer}
+                  setSlipCustomer={setSlipCustomer}
+                  slipPhone={slipPhone}
+                  setSlipPhone={setSlipPhone}
+                  slipService={slipService}
+                  setSlipService={setSlipService}
+                  slipAmount={slipAmount}
+                  setSlipAmount={setSlipAmount}
+                  slipPaid={slipPaid}
+                  setSlipPaid={setSlipPaid}
+                  generatedSlip={generatedSlip}
+                  setGeneratedSlip={setGeneratedSlip}
+                  onBackToDashboard={() => {
+                    setActiveSidebarTab("services");
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                />
+              )}
 
-                {/* 3. Supports Helpline (হালকা গ্রীন কালার দিয়ে সাপোর্ট হেল্পলাইন করবে ভালো করে 9382040746, নিচে বিকাল ৪ঃ০০ টা থেকে রাত্রি ১০:০০) */}
-                <div className="bg-[#EFFDF4]/90 border border-[#86EFAC]/45 rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-3xs select-none">
-                  <div className="w-8.5 h-8.5 bg-emerald-100 flex items-center justify-center rounded-xl text-[#15803D] mb-1.5 border border-[#86EFAC]/30 shrink-0">
-                    <Phone className="h-4.5 w-4.5 text-emerald-700 animate-pulse" />
-                  </div>
-                  <div className="text-[10px] text-emerald-800 font-extrabold tracking-wider uppercase mb-0.5 font-sans">
-                    সাপোর্ট হেল্পলাইন
-                  </div>
-                  <a href="tel:9382040746" className="text-sm sm:text-base font-black text-[#15803D] font-sans tracking-tight hover:underline mb-1 flex items-center gap-1">
-                    9382040746
-                  </a>
-                  <div className="text-[9px] sm:text-[9.5px] text-emerald-800 font-extrabold bg-emerald-100/50 border border-emerald-200/30 px-2 py-0.5 rounded-md leading-relaxed whitespace-nowrap">
-                    বিকাল ৪ঃ০০ টা থেকে রাত্রি ১০:০০
-                  </div>
-                </div>
-
-              </aside>
-
-              {/* RIGHT CONTENT COLUMN */}
-              <div className="flex-1 min-w-0 w-full space-y-5 lg:space-y-6 lg:p-6 lg:bg-white">
-
-                {activeSidebarTab === "services" && (
-                  <DashboardServices
-                    categories={categories}
-                    updates={updates}
-                    onSelectCategory={(catId) => {
-                      setDocCategory(catId);
-                      setActiveSidebarTab("all-links");
-                      setTimeout(() => {
-                        const el = document.getElementById("services-anchor");
-                        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-                      }, 80);
-                    }}
-                    onNavigateTab={(tab) => {
-                      setActiveSidebarTab(tab);
-                      window.scrollTo({ top: 0, behavior: "smooth" });
-                    }}
-                    getCategoryIcon={getCategoryIcon}
-                  />
-                )}
-
-                {activeSidebarTab === "all-links" && (
-                  <DashboardAllLinks
-                    categories={categories}
-                    docCategory={docCategory}
-                    setDocCategory={setDocCategory}
-                    displayedItems={displayedItems}
-                    getCategoryIcon={getCategoryIcon}
-                    getCategoryColorAccent={getCategoryColorAccent}
-                    renderOfficialLogo={renderOfficialLogo}
-                    getServiceMetadata={getServiceMetadata}
-                    onSelectService={setSelectedService}
-                  />
-                )}
-
-
-                {activeSidebarTab === "tools" && (
-                  <DashboardTools
-                    slipCustomer={slipCustomer}
-                    setSlipCustomer={setSlipCustomer}
-                    slipPhone={slipPhone}
-                    setSlipPhone={setSlipPhone}
-                    slipService={slipService}
-                    setSlipService={setSlipService}
-                    slipAmount={slipAmount}
-                    setSlipAmount={setSlipAmount}
-                    slipPaid={slipPaid}
-                    setSlipPaid={setSlipPaid}
-                    generatedSlip={generatedSlip}
-                    setGeneratedSlip={setGeneratedSlip}
-                  />
-                )}
-
-
-              </div> {/* Close RIGHT CONTENT COLUMN */}
-            </div> {/* Close flex row */}
+            </div>
           </div>
         )}
       </main>
@@ -3062,6 +3202,129 @@ export default function App() {
                   <ArrowUpRight className="h-3.5 w-3.5 stroke-[2.5]" />
                 </button>
               </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: CYBER CAFE SHOP REGISTRATION & EDITING */}
+      {showCafeModal && (
+        <div className="fixed inset-0 z-55 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-fade-in animate-duration-200">
+          <div className="bg-white rounded-3xl w-full max-w-[450px] overflow-hidden border border-emerald-100/60 shadow-2xl flex flex-col transform transition-all scale-100 font-sans">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-emerald-650 via-[#15803D] to-green-700 text-white p-5.5 flex items-center justify-between relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl -mr-8 -mt-8 pointer-events-none" />
+              <div className="flex items-center gap-2.5 relative z-10 animate-fade-in">
+                <div className="p-1.5 bg-white/10 rounded-lg shrink-0">
+                  <Laptop className="h-5 w-5 text-amber-300 animate-pulse" />
+                </div>
+                <div className="flex flex-col">
+                  <h3 className="font-black text-base text-white tracking-wide">
+                    {cafeProfile.isLoggedIn ? "স্টুডিও প্রোফাইল আপডেট" : "সাইবার ক্যাফে রেজিস্টার ও লগইন"}
+                  </h3>
+                  <span className="text-[10px] text-emerald-100 font-medium tracking-wider uppercase">Cyber Shop Smart Hub</span>
+                </div>
+              </div>
+              <button 
+                onClick={() => {
+                  setShowCafeModal(false);
+                }} 
+                className="text-white hover:text-emerald-100 bg-white/10 hover:bg-white/20 rounded-xl p-2 transition-all cursor-pointer relative z-10"
+              >
+                <X className="h-4.5 w-4.5" />
+              </button>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleCafeProfileSubmit} className="p-6 space-y-4 bg-linear-to-b from-white via-white to-emerald-50/10">
+              
+              {cafeSubmitSuccess ? (
+                <div className="py-8 flex flex-col items-center justify-center space-y-3 animate-fade-in">
+                  <div className="p-4 bg-emerald-50 rounded-full border-2 border-emerald-500/30 text-emerald-600 animate-bounce">
+                    <CheckCircle2 className="h-10 w-10" />
+                  </div>
+                  <div className="text-center space-y-1">
+                    <h4 className="font-black text-emerald-800 text-sm">সফলভাবে সংরক্ষিত হয়েছে!</h4>
+                    <p className="text-[10px] text-slate-400 font-semibold font-sans">আপনার স্মার্ট স্টুডিও ব্র্যান্ডিং এখন লাইভ।</p>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="text-center pb-1">
+                    <p className="text-xs text-slate-500 font-bold leading-normal">
+                      আপনার নিজস্ব সাইবার ক্যাফে বা ডিজিটাল স্টুডিওর নাম ও মালিকের নাম যুক্ত করে আমাদের এই সম্পূর্ণ সহজ সেবা প্ল্যাটফর্মটিকে আপনার নিজস্ব ব্র্যান্ডিং এ সাজান সফলভাবে।
+                    </p>
+                  </div>
+
+                  {/* Shop Name */}
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-black text-slate-700 flex items-center justify-between">
+                      <span>দোকান / ক্যাফের নাম (Shop Name)</span>
+                      <span className="text-[8.5px] text-[#15803D] font-bold">প্রয়োজনীয়</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={cafeShopNameInput}
+                      onChange={(e) => setCafeShopNameInput(e.target.value)}
+                      placeholder="যেমন: রাজীব ডিজিটাল স্টুডিও, বিশ্বনাথ টেলিকম..."
+                      className="w-full px-3.5 py-2.5 text-xs font-bold border border-slate-200 rounded-xl focus:outline-hidden focus:ring-4 focus:ring-[#15803D]/10 focus:border-[#15803D] bg-slate-50/50 text-slate-800 placeholder-slate-400"
+                    />
+                  </div>
+
+                  {/* Owner Name */}
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-black text-slate-700 flex items-center justify-between">
+                      <span>মালিক / প্রোপাইটার নাম (Owner Name)</span>
+                      <span className="text-[8.5px] text-[#15803D] font-bold">প্রয়োজনীয়</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={cafeOwnerNameInput}
+                      onChange={(e) => setCafeOwnerNameInput(e.target.value)}
+                      placeholder="যেমন: মনোজ সরকার, শান্তনু চ্যাটার্জী..."
+                      className="w-full px-3.5 py-2.5 text-xs font-bold border border-slate-200 rounded-xl focus:outline-hidden focus:ring-4 focus:ring-[#15803D]/10 focus:border-[#15803D] bg-slate-50/50 text-slate-800 placeholder-slate-400"
+                    />
+                  </div>
+
+                  {/* Contact Info */}
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-black text-slate-700 flex items-center justify-between">
+                      <span>মোবাইল নম্বর অথবা ইমেল আইডি (Phone/Email)</span>
+                      <span className="text-[8.5px] text-[#15803D] font-bold">গোপন ও নিরাপদ</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={cafeContactInput}
+                      onChange={(e) => setCafeContactInput(e.target.value)}
+                      placeholder="যেমন: 9876543210 অথবা shop@gmail.com..."
+                      className="w-full px-3.5 py-2.5 text-xs font-bold border border-slate-200 rounded-xl focus:outline-hidden focus:ring-4 focus:ring-[#15803D]/10 focus:border-[#15803D] bg-slate-50/50 text-slate-800 placeholder-slate-400"
+                    />
+                  </div>
+
+                  {/* Action buttons */}
+                  <div className="flex items-center justify-end gap-2.5 pt-4.5 border-t border-slate-100/70 font-sans">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowCafeModal(false);
+                      }}
+                      className="px-4.5 py-2 text-xs font-bold text-slate-500 hover:text-red-650 hover:bg-red-50 rounded-xl transition-all cursor-pointer border border-transparent hover:border-red-100"
+                    >
+                      বাতিল
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-5 py-2.5 text-xs font-black text-white bg-gradient-to-r from-emerald-600 to-green-700 hover:from-emerald-700 hover:to-green-800 rounded-xl transition-all cursor-pointer shadow-md shadow-emerald-600/10 hover:shadow-lg flex items-center gap-1.5"
+                    >
+                      <span>{cafeProfile.isLoggedIn ? "আপডেট করুন" : "রেজিস্টার করুন"}</span>
+                      <ArrowUpRight className="h-3.5 w-3.5 stroke-[2.5]" />
+                    </button>
+                  </div>
+                </>
+              )}
             </form>
           </div>
         </div>

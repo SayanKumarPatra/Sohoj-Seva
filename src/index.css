@@ -84,3 +84,105 @@ body {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
+
+/* Dynamic floating bubble animations */
+@keyframes floatOne {
+  0% {
+    transform: translate(0px, 0px) scale(1) rotate(0deg);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1) rotate(120deg);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.95) rotate(240deg);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1) rotate(360deg);
+  }
+}
+
+@keyframes floatTwo {
+  0% {
+    transform: translate(0px, 0px) scale(1) rotate(0deg);
+  }
+  33% {
+    transform: translate(-40px, 30px) scale(0.9) rotate(-120deg);
+  }
+  66% {
+    transform: translate(25px, -30px) scale(1.15) rotate(-240deg);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1) rotate(-360deg);
+  }
+}
+
+@keyframes floatThree {
+  0% {
+    transform: translate(0px, 0px) scale(1) rotate(0deg);
+  }
+  50% {
+    transform: translate(45px, 45px) scale(1.05) rotate(180deg);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1) rotate(360deg);
+  }
+}
+
+@keyframes driftUpSlow {
+  0% {
+    transform: translateY(105vh) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.4;
+  }
+  85% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: translateY(-10vh) translateX(40px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes shimmerPulse {
+  0%, 100% {
+    opacity: 0.15;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.15);
+  }
+}
+
+.animate-float-1 {
+  animation: floatOne 25s infinite ease-in-out;
+}
+
+.animate-float-2 {
+  animation: floatTwo 32s infinite ease-in-out;
+}
+
+.animate-float-3 {
+  animation: floatThree 20s infinite ease-in-out;
+}
+
+.animate-drift-slow-1 {
+  animation: driftUpSlow 28s infinite linear;
+}
+
+.animate-drift-slow-2 {
+  animation: driftUpSlow 36s infinite linear;
+  animation-delay: -9s;
+}
+
+.animate-drift-slow-3 {
+  animation: driftUpSlow 42s infinite linear;
+  animation-delay: -18s;
+}
+
+.animate-shimmer-pulse {
+  animation: shimmerPulse 6s infinite ease-in-out;
+}
+
